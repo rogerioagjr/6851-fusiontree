@@ -10,4 +10,6 @@
 
 #include <stdio.h>
 
+#include "fusiontree.hpp"
+
 #endif /* b_tree_hpp */

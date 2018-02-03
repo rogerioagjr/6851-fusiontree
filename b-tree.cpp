@@ -6,13 +6,6 @@
 //
 
 #include <iostream>
-#include "fusiontree.cpp"
+#include "fusiontree.hpp"
 
 using namespace std;
-
-const int brench=5;
-
-class node{
-	
-	
-};

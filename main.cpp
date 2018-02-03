@@ -5,7 +5,6 @@
 //  Created by Rogerio Aristida Guimaraes Junior on 1/31/18.
 //
 
-#include "main.hpp"
 #include "fusiontree.cpp"
 #include <iostream>
 
@@ -28,7 +27,11 @@ int main(){
 	
 	fusiontree t(v);
 	
+	cout << "OK 1" << endl;
+	
 	cout << t << endl;
+	
+	cout << "OK 2" << endl;
 	
 	for(int i=0;i<t.size();i++){
 		

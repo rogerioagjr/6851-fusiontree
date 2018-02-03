@@ -7,166 +7,164 @@
 
 #include "big_int.hpp"
 
-#include "constants.cpp"
-#include <bitset>
-
 using namespace std;
 
-class big_int{
+
+big_int::big_int(int x){
 	
-	bitset<WSIZE> bs;
+	bs=x;
+}
+
+big_int::big_int(bitset<WSIZE> b){
 	
-	big_int(int x=0){
-		
-		bs=x;
-	}
+	bs=b;
+}
+
+int big_int::get_kth_bit(int k) const{
 	
-	big_int(bitset<WSIZE> b){
-		
-		bs=b;
-	}
+	return bs[k];
+}
+
+big_int big_int::operator ~() const{
 	
-	big_int operator ~() const{
-		
-		return big_int(~bs);
-	}
+	return big_int(~bs);
+}
+
+big_int big_int::operator -() const{
 	
-	big_int operator -() const{
-		
-		return ((~(*this))+1);
-	}
+	return ((~(*this))+1);
+}
+
+bool big_int::operator <(const big_int x) const{
 	
-	bool operator <(const big_int x) const{
-		
-		return bs.to_string()<x.bs.to_string();
-	}
+	return bs.to_string()<x.bs.to_string();
+}
+
+bool big_int::operator <=(const big_int x) const{
 	
-	bool operator <=(const big_int x) const{
-		
-		return bs.to_string()<=x.bs.to_string();
-	}
+	return bs.to_string()<=x.bs.to_string();
+}
+
+bool big_int::operator >(const big_int x) const{
 	
-	bool operator >(const big_int x) const{
-		
-		return bs.to_string()>x.bs.to_string();
-	}
+	return bs.to_string()>x.bs.to_string();
+}
+
+bool big_int::operator >=(const big_int x) const{
 	
-	bool operator >=(const big_int x) const{
-		
-		return bs.to_string()>=x.bs.to_string();
-	}
+	return bs.to_string()>=x.bs.to_string();
+}
+
+bool big_int::operator ==(const big_int x) const{
 	
-	bool operator ==(const big_int x) const{
-		
-		return bs.to_string()==x.bs.to_string();
-	}
+	return bs.to_string()==x.bs.to_string();
+}
+
+bool big_int::operator !=(const big_int x) const{
 	
-	bool operator !=(const big_int x) const{
-		
-		return bs.to_string()!=x.bs.to_string();
-	}
+	return bs.to_string()!=x.bs.to_string();
+}
+
+big_int big_int::operator <<(const int x) const{
 	
-	big_int operator <<(const int x) const{
-		
-		return big_int(bs<<x);
-	}
+	return big_int(bs<<x);
+}
+
+big_int big_int::operator >>(const int x) const{
 	
-	big_int operator >>(const int x) const{
-		
-		return big_int(bs>>x);
-	}
+	return big_int(bs>>x);
+}
+
+big_int big_int::operator |(const big_int x) const{
 	
-	big_int operator |(const big_int x) const{
-		
-		return big_int(bs | x.bs);
-	}
+	return big_int(bs | x.bs);
+}
+
+big_int big_int::operator &(const big_int x) const{
 	
-	big_int operator &(const big_int x) const{
-		
-		return big_int(bs & x.bs);
-	}
+	return big_int(bs & x.bs);
+}
+
+big_int big_int::operator ^(const big_int x) const{
 	
-	big_int operator ^(const big_int x) const{
-		
-		return big_int(bs ^ x.bs);
-	}
+	return big_int(bs ^ x.bs);
+}
+
+big_int big_int::operator +(const big_int x) const{
 	
-	big_int operator +(const big_int x) const{
+	bitset<WSIZE> carry, res;
+	
+	for(int i=0;i<WSIZE;i++){
 		
-		bitset<WSIZE> carry, res;
+		res[i]=carry[i]^bs[i]^x.bs[i];
 		
-		for(int i=0;i<WSIZE;i++){
+		if((bs[i] & x.bs[i]) or ((bs[i] | x.bs[i]) & carry[i])){
 			
-			res[i]=carry[i]^bs[i]^x.bs[i];
-			
-			if((bs[i] & x.bs[i]) or ((bs[i] | x.bs[i]) & carry[i])){
+			if(i<WSIZE-1){
 				
-				if(i<WSIZE-1){
-					
-					carry[i+1]=1;
-				}
+				carry[i+1]=1;
 			}
 		}
-		
-		return big_int(res);
 	}
 	
-	big_int operator -(const big_int x) const{
-		
-		return ((*this)+(-x));
-	}
+	return big_int(res);
+}
+
+big_int big_int::operator -(const big_int x) const{
 	
-	void operator +=(big_int x){
-		
-		(*this)=(*this)+x;
-	}
+	return ((*this)+(-x));
+}
+
+void big_int::operator +=(big_int x){
 	
-	void operator -=(big_int x){
-		
-		(*this)=(*this)-x;
-	}
+	(*this)=(*this)+x;
+}
+
+void big_int::operator -=(big_int x){
 	
-	void operator |=(big_int x){
-		
-		(*this)=(*this)|x;
-	}
+	(*this)=(*this)-x;
+}
+
+void big_int::operator |=(big_int x){
 	
-	void operator &=(big_int x){
-		
-		(*this)=(*this)&x;
-	}
+	(*this)=(*this)|x;
+}
+
+void big_int::operator &=(big_int x){
 	
-	void operator ^=(big_int x){
-		
-		(*this)=(*this)^x;
-	}
+	(*this)=(*this)&x;
+}
+
+void big_int::operator ^=(big_int x){
 	
-	big_int operator *(const big_int x) const{
+	(*this)=(*this)^x;
+}
+
+big_int big_int::operator *(const big_int x) const{
+	
+	big_int res;
+	
+	for(int i=0;i<WSIZE;i++){
 		
-		big_int res;
-		
-		for(int i=0;i<WSIZE;i++){
+		if(x.bs[i]){
 			
-			if(x.bs[i]){
-				
-				res+=(big_int((*this)<<i));
-			}
+			res+=(big_int((*this)<<i));
 		}
-		
-		return res;
 	}
 	
-	void operator *=(big_int x){
-		
-		(*this)=(*this)*x;
-	}
-};
+	return res;
+}
+
+void big_int::operator *=(big_int x){
+	
+	(*this)=(*this)*x;
+}
 
 ostream &operator << (ostream &out, const big_int &bi){
 	
 	for(int i=PSIZE-1;i>=0;i--){
 		
-		out << bi.bs[i];
+		out << bi.get_kth_bit(i);
 	}
 	
 	return out;
@@ -178,7 +176,7 @@ int clz(big_int const &x){
 	
 	for(int i=WSIZE-1;i>=0;i--){
 		
-		if(x.bs[i]==0){
+		if(x.get_kth_bit(i)==0){
 			
 			res++;
 		}
