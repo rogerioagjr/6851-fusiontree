@@ -24,9 +24,9 @@ int main() {
   }
 
   fusiontree t(v);
-  
+
   cout << t.size() << endl;
-  
+
   cout << t << endl;
 
   /*for (int i = 0; i < t.size(); i++) {

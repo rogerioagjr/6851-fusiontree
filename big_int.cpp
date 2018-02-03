@@ -16,8 +16,10 @@ big_int::big_int(int x) { bs = x; }
 big_int::big_int(const bitset<WSIZE> &b) { bs = b; }
 
 int big_int::get_kth_bit(int k) const {
-  if(bool(bs[k])) return 1;
-  else return 0;
+  if (bool(bs[k]))
+    return 1;
+  else
+    return 0;
 }
 
 big_int big_int::operator~() const { return big_int(~bs); }
