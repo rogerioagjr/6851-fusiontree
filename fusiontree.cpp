@@ -16,13 +16,11 @@ using namespace std;
 
 // add numbers from a vector to array v
 void fusiontree::add_in_array(vector<big_int> &v_) {
+  sz = v_.size();
   for (int i = 0; i < v_.size(); i++) {
     v[i] = v_[i];
-
-    sort(v, v + size());
   }
-
-  sz = v_.size();
+  sort(v, v + size());
 }
 
 // finds the important bits of a set of integers

@@ -24,14 +24,12 @@ int main() {
   }
 
   fusiontree t(v);
-
-  cout << "OK 1" << endl;
-
+  
+  cout << t.size() << endl;
+  
   cout << t << endl;
 
-  cout << "OK 2" << endl;
-
-  for (int i = 0; i < t.size(); i++) {
+  /*for (int i = 0; i < t.size(); i++) {
     cout << t.approximate_sketch(t.pos(i)) << endl;
   }
 
@@ -46,7 +44,7 @@ int main() {
   for (int i = 0; i < t.r_val(); i++) {
     cout << "m[" << i << "]=" << t.m_pos(i) << ", b[" << i << "]=" << t.b_pos(i)
          << endl;
-  }
+  }*/
 
   cout << string(t.sketch_ok() ? "correct" : "error") << endl;
 

@@ -22,7 +22,7 @@ class big_int {
  public:
   big_int(int x = 0);
 
-  big_int(bitset<WSIZE> b);
+  big_int(const bitset<WSIZE> &b);
 
   int get_kth_bit(int k) const;
 
