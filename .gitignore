@@ -1,5 +1,4 @@
 Fusion Tree.xcodeproj
-b-tree
-fusiontree
-in
 main
+*.o
+.DS_Store

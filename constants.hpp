@@ -15,5 +15,4 @@
 #define PSIZE 300
 #define K 3
 
-
 #endif /* constants_hpp */

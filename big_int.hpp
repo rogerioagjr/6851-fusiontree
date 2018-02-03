@@ -10,71 +10,68 @@
 
 #include <stdio.h>
 
-#include "constants.hpp"
 #include <bitset>
+#include "constants.hpp"
 
 using namespace std;
 
-class big_int{
-	
-private:
-	
-	bitset<WSIZE> bs;
-	
-public:
-	
-	big_int(int x=0);
-	
-	big_int(bitset<WSIZE> b);
-	
-	int get_kth_bit(int k) const;
-	
-	big_int operator ~() const;
-	
-	big_int operator -() const;
-	
-	bool operator <(const big_int x) const;
-	
-	bool operator <=(const big_int x) const;
-	
-	bool operator >(const big_int x) const;
-	
-	bool operator >=(const big_int x) const;
-	
-	bool operator ==(const big_int x) const;
-	
-	bool operator !=(const big_int x) const;
-	
-	big_int operator <<(const int x) const;
-	
-	big_int operator >>(const int x) const;
-	
-	big_int operator |(const big_int x) const;
-	
-	big_int operator &(const big_int x) const;
-	
-	big_int operator ^(const big_int x) const;
-	
-	big_int operator +(const big_int x) const;
-	
-	big_int operator -(const big_int x) const;
-	
-	void operator +=(big_int x);
-	
-	void operator -=(big_int x);
-	
-	void operator |=(big_int x);
-	
-	void operator &=(big_int x);
-	
-	void operator ^=(big_int x);
-	
-	big_int operator *(const big_int x) const;
-	
-	void operator *=(big_int x);
+class big_int {
+ private:
+  bitset<WSIZE> bs;
+
+ public:
+  big_int(int x = 0);
+
+  big_int(bitset<WSIZE> b);
+
+  int get_kth_bit(int k) const;
+
+  big_int operator~() const;
+
+  big_int operator-() const;
+
+  bool operator<(const big_int x) const;
+
+  bool operator<=(const big_int x) const;
+
+  bool operator>(const big_int x) const;
+
+  bool operator>=(const big_int x) const;
+
+  bool operator==(const big_int x) const;
+
+  bool operator!=(const big_int x) const;
+
+  big_int operator<<(const int x) const;
+
+  big_int operator>>(const int x) const;
+
+  big_int operator|(const big_int x) const;
+
+  big_int operator&(const big_int x) const;
+
+  big_int operator^(const big_int x) const;
+
+  big_int operator+(const big_int x) const;
+
+  big_int operator-(const big_int x) const;
+
+  void operator+=(big_int x);
+
+  void operator-=(big_int x);
+
+  void operator|=(big_int x);
+
+  void operator&=(big_int x);
+
+  void operator^=(big_int x);
+
+  big_int operator*(const big_int x) const;
+
+  void operator*=(big_int x);
 };
 
-ostream &operator << (ostream &out, const big_int &bi);
+ostream &operator<<(ostream &out, const big_int &bi);
 
 int clz(big_int const &x);
 
