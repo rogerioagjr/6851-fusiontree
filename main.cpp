@@ -13,10 +13,10 @@ using namespace std;
 int main() {
   vector<big_int> v;
 
-  int q;
-  cin >> q;
+  int n;
+  cin >> n;
 
-  for (int i = 0; i < q; i++) {
+  for (int i = 0; i < n; i++) {
     int k;
     cin >> k;
 
@@ -29,24 +29,19 @@ int main() {
 
   cout << t << endl;
 
-  /*for (int i = 0; i < t.size(); i++) {
-    cout << t.approximate_sketch(t.pos(i)) << endl;
-  }
-
-  cout << "r: " << t.r_val() << endl;
-
-  cout << "bitmask: " << t.important_bits() << endl;
-
-  cout << "sketch_mask: " << t.sketch_mask_val() << endl;
-
-  cout << "m: " << t.m_val() << endl;
-
-  for (int i = 0; i < t.r_val(); i++) {
-    cout << "m[" << i << "]=" << t.m_pos(i) << ", b[" << i << "]=" << t.b_pos(i)
-         << endl;
-  }*/
-
   cout << string(t.sketch_ok() ? "correct" : "error") << endl;
 
-  cout << "mem: " << t.mem_val() << endl;
+  cout << t.mem_val() << endl;
+
+  int q;
+  cin >> q;
+
+  for (int i = 0; i < q; i++) {
+    int x;
+    cin >> x;
+
+    cout << x << ":" << endl;
+
+    cout << t.find_predecessor(x) << endl << endl;
+  }
 }

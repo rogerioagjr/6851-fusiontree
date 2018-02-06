@@ -24,6 +24,8 @@ class big_int {
 
   big_int(const bitset<WSIZE> &b);
 
+  int to_int() const;
+
   int get_kth_bit(int k) const;
 
   big_int operator~() const;

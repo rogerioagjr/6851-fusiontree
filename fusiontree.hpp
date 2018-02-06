@@ -27,6 +27,10 @@ class fusiontree {
   big_int v[K];  // real integers
   int sz;        // size of tree
 
+  big_int k_mult;    // integer used by parallel comparison
+  big_int diff_and;  // bitmask used in parallel comparison
+  big_int pos_and;   // bitmask used in last step of parallel comparison
+
   big_int m;            // integer m
   int m_idx[K];         // array with the m_i indexes
   big_int sketch_mask;  // mask of all the m_i+b_i sums
@@ -46,8 +50,8 @@ class fusiontree {
   // finds an integer m and sketch_mask to be used for sketching
   void find_m();
 
-  // sets the variable mem that will keep the sketched numbers
-  void set_mem();
+  // sets the variables used in parallel comparison
+  void set_parallel_comparison();
 
  public:
   // returns the val of mem
@@ -82,6 +86,16 @@ class fusiontree {
 
   // returns the approximate sketch, in the fusion tree, of a given number
   const big_int approximate_sketch(const big_int &x) const;
+
+  // returns an integer with O(w^(1/5)) sketches of x, separated by zeroes
+  const big_int sketch_k(const big_int &x) const;
+
+  // returns the index of the biggest k in the tree succh that
+  // sketch(k)<=sketch(x)
+  const int find_sketch_predecessor(const big_int &x) const;
+
+  // returns the index of the biggest k in the tree succh that k<=x
+  const int find_predecessor(const big_int &x) const;
 
   // v_ is a vector with the integers to be stored
   fusiontree(vector<big_int> &v_);

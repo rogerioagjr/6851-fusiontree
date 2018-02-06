@@ -22,6 +22,11 @@ int big_int::get_kth_bit(int k) const {
     return 0;
 }
 
+int big_int::to_int() const {
+  int x = bs.to_ulong();
+  return x;
+}
+
 big_int big_int::operator~() const { return big_int(~bs); }
 
 big_int big_int::operator-() const { return ((~(*this)) + 1); }
