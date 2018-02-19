@@ -24,27 +24,5 @@ int main() {
     v.push_back(k);
   }
 
-  /*fusiontree t(v);
-
-  /*cout << t.size() << endl;
-
-  cout << t << endl;
-
-  cout << string(t.sketch_ok() ? "correct" : "error") << endl;
-
-  cout << t.mem_val() << endl;*/
-
   b_tree my_b_tree = b_tree(v);
-
-  int q;
-  cin >> q;
-
-  for (int i = 0; i < q; i++) {
-    int x;
-    cin >> x;
-
-    cout << x << ":" << endl;
-
-    cout << t.find_predecessor(x) << endl << endl;
-  }
 }
