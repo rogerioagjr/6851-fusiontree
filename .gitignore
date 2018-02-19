@@ -2,3 +2,5 @@
 Fusion Tree.xcodeproj
 main
 *.o
+b-tree
+fusiontree

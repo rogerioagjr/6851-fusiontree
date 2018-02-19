@@ -5,7 +5,7 @@
 #  MIT class 6.172
 #
 
-#  
+#
 #  Usage:
 #  		"make" will make the main program by default
 #			"make clean" remove all files created by previous compilations
@@ -19,7 +19,7 @@ OBJECTS = $(SOURCES:.cpp=.o)
 PROGRAM = main
 
 COMP = clang++
-COMPFLAGS = -Wall
+COMPFLAGS = -Wall -g
 LDFLAGS = -lm
 
 ifeq ($(DEBUG),1)

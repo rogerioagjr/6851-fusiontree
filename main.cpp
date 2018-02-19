@@ -9,11 +9,12 @@
 #include "fusiontree.hpp"
 #include "big_int.hpp"
 #include "test_generator.hpp"
+#include "b-tree.hpp"
 
 using namespace std;
 
 int main() {
-  /*vector<big_int> v;
+  vector<big_int> v;
 
   int n;
   cin >> n;
@@ -25,29 +26,19 @@ int main() {
     v.push_back(k);
   }
 
- fusiontree t(v);
-
-  cout << t.size() << endl;
-
-  cout << t << endl;
-
-  cout << string(t.sketch_ok() ? "correct" : "error") << endl;
-
+  b_tree my_b_tree = b_tree(v);
+  
   int q;
   cin >> q;
-
+  
   for (int i = 0; i < q; i++) {
-    int x;
-    cin >> x;
-
-    cout << x << ":" << endl;
-
-    cout << t.find_predecessor(big_int(x)) << endl << endl;
+    int k;
+    cin >> k;
+    big_int k_ = k;
+    big_int pred = my_b_tree.get_predecessor(k_);
     
-    cout << big_int(x) << endl;
-    
-    cout << t.approximate_sketch(x) << endl;
-  }*/
+    cout << "predecessor(" << k << ") = " << pred << endl;
+  }
   
   test();
   
