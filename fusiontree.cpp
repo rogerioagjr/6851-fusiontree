@@ -187,7 +187,7 @@ const int fusiontree::find_predecessor(const big_int &x) const {
     q1 = first_diff(v[idx1], x);
   }
 
-  if (idx2 < k) {
+  if (idx2 < size()) {
     q2 = first_diff(v[idx2], x);
   } else {
     q2 = -2;

@@ -40,7 +40,25 @@ int main() {
     cout << "predecessor(" << k << ") = " << pred << endl;
   }
 
-  test();
+  // test();
+
+  /*fusiontree t = fusiontree(v);
+
+  int q;
+  cin >> q;
+
+  for(int i=0;i<q;i++){
+
+    int x;
+    cin >> x;
+
+    cout << t.find_predecessor(x) << endl;
+
+    cout << t << endl;
+
+    cout << t.approximate_sketch(t.pos(0)) << endl;
+    cout << t.approximate_sketch(x) << endl;
+  }*/
 
   return 0;
 }
