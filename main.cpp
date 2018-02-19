@@ -7,11 +7,13 @@
 
 #include <iostream>
 #include "fusiontree.hpp"
+#include "big_int.hpp"
+#include "test_generator.hpp"
 
 using namespace std;
 
 int main() {
-  vector<big_int> v;
+  /*vector<big_int> v;
 
   int n;
   cin >> n;
@@ -23,15 +25,13 @@ int main() {
     v.push_back(k);
   }
 
-  fusiontree t(v);
+ fusiontree t(v);
 
-  /*cout << t.size() << endl;
+  cout << t.size() << endl;
 
   cout << t << endl;
 
   cout << string(t.sketch_ok() ? "correct" : "error") << endl;
-
-  cout << t.mem_val() << endl;*/
 
   int q;
   cin >> q;
@@ -42,6 +42,14 @@ int main() {
 
     cout << x << ":" << endl;
 
-    cout << t.find_predecessor(x) << endl << endl;
-  }
+    cout << t.find_predecessor(big_int(x)) << endl << endl;
+    
+    cout << big_int(x) << endl;
+    
+    cout << t.approximate_sketch(x) << endl;
+  }*/
+  
+  test();
+  
+  return 0;
 }

@@ -95,6 +95,7 @@ class fusiontree {
   const int find_sketch_predecessor(const big_int &x) const;
 
   // returns the index of the biggest k in the tree succh that k<=x
+  // or -1 if there is no such k
   const int find_predecessor(const big_int &x) const;
 
   // v_ is a vector with the integers to be stored

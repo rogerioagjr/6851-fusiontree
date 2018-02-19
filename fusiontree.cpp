@@ -174,8 +174,8 @@ const int fusiontree::find_sketch_predecessor(const big_int &x) const {
 }
 
 // returns the index of the biggest k in the tree succh that k<=x
+// or -1 if there is no such k
 const int fusiontree::find_predecessor(const big_int &x) const {
-  int r4 = r * r * r * r;
 
   int idx1 = find_sketch_predecessor(x);
   int idx2 = idx1 + 1;
@@ -183,7 +183,7 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   int q1, q2;
 
   if (idx1 < 0) {
-    q1 = r4;
+    q1 = -2;
   } else {
     q1 = first_diff(v[idx1], x);
   }
@@ -191,7 +191,7 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   if (idx2 < k) {
     q2 = first_diff(v[idx2], x);
   } else {
-    q2 = r4;
+    q2 = -2;
   }
 
   if (q1 == -1) {
@@ -204,8 +204,14 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   int answer = 0;
 
   big_int y;
+  
+  //cout << q1 << " " << q2 << endl;
 
-  int q = min(q1, q2);
+  int q;
+  
+  if(q1 == -2) q = q2;
+  if(q2 == -2) q = q1;
+  if(q1 != -2 and q2 != -2) q = min(q1,q2);
 
   // if diff bit is 1
   if ((x & (big_int(1) << q)) != 0) {
@@ -217,12 +223,15 @@ const int fusiontree::find_predecessor(const big_int &x) const {
 
   // if diff bit is 0
   else {
+    
+    //cout << "diff bit is 0 in pos " << q << endl;
+    
     y = x | (big_int(1) << q);
     y &= ((~big_int(0)) << (q));
 
     answer = find_sketch_predecessor(y);
 
-    if (v[answer] > x) {
+    if (answer>=0 and v[answer] > x) {
       answer--;
     }
   }
@@ -234,6 +243,7 @@ const int fusiontree::find_predecessor(const big_int &x) const {
 fusiontree::fusiontree(vector<big_int> &v_) {
   q = k = K;
   mem = 0;
+  r=0;
   w = WVAR;
 
   add_in_array(v_);
