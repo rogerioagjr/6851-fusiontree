@@ -25,13 +25,13 @@ int main() {
 
   fusiontree t(v);
 
-  cout << t.size() << endl;
+  /*cout << t.size() << endl;
 
   cout << t << endl;
 
   cout << string(t.sketch_ok() ? "correct" : "error") << endl;
 
-  cout << t.mem_val() << endl;
+  cout << t.mem_val() << endl;*/
 
   int q;
   cin >> q;

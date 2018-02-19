@@ -207,11 +207,8 @@ const int fusiontree::find_predecessor(const big_int &x) const {
 
   int q = min(q1, q2);
 
-  // cout << "q: " << q << endl;
-
   // if diff bit is 1
   if ((x & (big_int(1) << q)) != 0) {
-    // cout << "case 1" << endl;
     y = x & (~(big_int(1) << q));
     y |= ((big_int(1) << (q)) - 1);
 
@@ -220,7 +217,6 @@ const int fusiontree::find_predecessor(const big_int &x) const {
 
   // if diff bit is 0
   else {
-    // cout << "case 0" << endl;
     y = x | (big_int(1) << q);
     y &= ((~big_int(0)) << (q));
 
