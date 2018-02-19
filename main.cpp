@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include "fusiontree.hpp"
+#include "b-tree.hpp"
 
 using namespace std;
 
@@ -23,7 +24,7 @@ int main() {
     v.push_back(k);
   }
 
-  fusiontree t(v);
+  /*fusiontree t(v);
 
   cout << t.size() << endl;
 
@@ -43,5 +44,7 @@ int main() {
     cout << x << ":" << endl;
 
     cout << t.find_predecessor(x) << endl << endl;
-  }
+  }*/
+
+  b_tree my_b_tree = b_tree(v);
 }

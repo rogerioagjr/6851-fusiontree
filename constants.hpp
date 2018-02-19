@@ -12,7 +12,7 @@
 
 #define WSIZE 300
 #define WVAR 243
-#define PSIZE 300
+#define PSIZE 4
 #define K 3
 
 #endif /* constants_hpp */

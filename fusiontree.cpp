@@ -238,6 +238,7 @@ const int fusiontree::find_predecessor(const big_int &x) const {
 fusiontree::fusiontree(vector<big_int> &v_) {
   q = k = K;
   mem = 0;
+  r = 0;
   w = WVAR;
 
   add_in_array(v_);
