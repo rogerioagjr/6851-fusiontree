@@ -24,7 +24,7 @@ private:
 public:
   b_node(vector<big_int> &keys);
 
-  const big_int get_predecessor(big_int &x) const;
+  const big_int get_predecessor(const big_int &x) const;
 };
 
 class b_tree {
@@ -34,7 +34,7 @@ private:
 public:
   b_tree(vector<big_int> &keys);
 
-  const big_int get_predecessor(big_int &x) const;
+  const big_int get_predecessor(const big_int &x) const;
 };
 
 #endif /* b_tree_hpp */

@@ -82,10 +82,10 @@ b_tree::b_tree(vector<big_int> &keys) {
   root = new b_node(keys);
 }
 
-const big_int b_node::get_predecessor(big_int &x) const {
-  // cout << "get_predecessor(" << x << ", " << this << ")" << endl;
+const big_int b_node::get_predecessor(const big_int &x) const {
+  cout << "get_predecessor(" << x << ", " << this << ")" << endl;
   int pred_index = key_tree->find_predecessor(x);
-  // cout << "pred_index = " << pred_index << endl;
+  cout << "pred_index = " << pred_index << endl;
   if (children[pred_index + 1] == NULL) {
     if (pred_index == -1) {
       return -1;
@@ -105,6 +105,6 @@ const big_int b_node::get_predecessor(big_int &x) const {
   }
 }
 
-const big_int b_tree::get_predecessor(big_int &x) const {
+const big_int b_tree::get_predecessor(const big_int &x) const {
   return root->get_predecessor(x);
 }
