@@ -3,10 +3,10 @@
 //  Fusion Tree
 //
 
-#include <iostream>
-#include <algorithm>
-#include "fusiontree.hpp"
 #include "b-tree.hpp"
+#include <algorithm>
+#include <iostream>
+#include "fusiontree.hpp"
 
 using namespace std;
 
@@ -50,12 +50,12 @@ b_node::b_node(vector<big_int> &keys) {
         num_keys_subtree++;
       }
       if (num_keys_subtree > 0) {
-        vector<big_int> subtree_keys = vector<big_int>(keys.begin() + cur_key_index,
-          keys.begin() + cur_key_index + num_keys_subtree);
+        vector<big_int> subtree_keys =
+            vector<big_int>(keys.begin() + cur_key_index,
+                            keys.begin() + cur_key_index + num_keys_subtree);
         children[cur_child_index] = new b_node(subtree_keys);
         cur_key_index += num_keys_subtree;
-      }
-      else {
+      } else {
         children[cur_child_index] = NULL;
       }
       cur_child_index++;
@@ -92,8 +92,7 @@ const big_int b_node::get_predecessor(const big_int &x) const {
     } else {
       return key_tree->pos(pred_index);
     }
-  }
-  else {
+  } else {
     big_int pred_child = children[pred_index + 1]->get_predecessor(x);
     if (pred_child == -1 && pred_index == -1) {
       return -1;
