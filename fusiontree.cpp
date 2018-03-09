@@ -14,6 +14,15 @@
 
 using namespace std;
 
+// calculates the basic bitmasks used in bit tricks
+void fusiontree::pre_calc_mask() {
+  for (int i = 0; i < WSIZE; i++) {
+    mask_1[i] = (big_int(1) << i);
+    mask_no_1[i] = (~big_int(1) << i);
+    mask_no_0[i] = (~big_int(0) << i);
+  }
+}
+
 // add numbers from a vector to array v
 void fusiontree::add_in_array(vector<big_int> &v_) {
   sz = v_.size();
@@ -36,11 +45,11 @@ void fusiontree::find_important_bits() {
       if (temp < diff_point) diff_point = temp;
     }
 
-    b |= (big_int(1) << (diff_point));
+    b |= mask_1[diff_point];
   }
 
   for (int i = 0; i < WSIZE; i++) {
-    if ((b & (big_int(1) << i)) != 0) {
+    if ((b & mask_1[i]) != 0) {
       ibit[r] = i;
       r++;
     }
@@ -56,13 +65,13 @@ void fusiontree::find_m() {
 
   for (int i = 0; i < r; i++) {
     for (int j = 0; j < r3; j++) {
-      if ((tag & (big_int(1) << j)) == 0) {
+      if ((tag & mask_1[j]) == 0) {
         m_idx[i] = j;
 
         for (int k1 = 0; k1 < r; k1++) {
           for (int k2 = 0; k2 < r; k2++) {
             if ((j + ibit[k1] - ibit[k2]) >= 0) {
-              tag |= (big_int(1) << (j + ibit[k1] - ibit[k2]));
+              tag |= mask_1[j + ibit[k1] - ibit[k2]];
             }
           }
         }
@@ -76,9 +85,9 @@ void fusiontree::find_m() {
   for (int i = 0; i < r; i++) {
     m_idx[i] += r3 * ((w - ibit[i] + i * r3) / r3);
 
-    m |= (big_int(1) << (m_idx[i]));
+    m |= mask_1[m_idx[i]];
 
-    sketch_mask |= (big_int(1) << (ibit[i] + m_idx[i]));
+    sketch_mask |= mask_1[ibit[i] + m_idx[i]];
   }
 }
 
@@ -88,23 +97,23 @@ void fusiontree::set_parallel_comparison() {
 
   // set mem
   for (int i = 0; i < k; i++) {
-    mem |= (big_int(1) << ((i + 1) * r4 + i));
+    mem |= mask_1[(i + 1) * r4 + i];
     mem |= (approximate_sketch(pos(k - 1 - i)) << i * (r4 + 1));
   }
 
   // set k_mult
   for (int i = 0; i < k; i++) {
-    k_mult |= (big_int(1) << i * (r4 + 1));
+    k_mult |= mask_1[i * (r4 + 1)];
   }
 
   // set diff_and
   for (int i = 0; i < k; i++) {
-    diff_and |= (big_int(1) << ((i + 1) * r4 + i));
+    diff_and |= mask_1[(i + 1) * r4 + i];
   }
 
   // set pos_and
   for (int i = 0; i < r4; i++) {
-    pos_and |= (big_int(1) << (i));
+    pos_and |= mask_1[i];
   }
 }
 
@@ -213,9 +222,9 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   if (q1 != -2 and q2 != -2) q = min(q1, q2);
 
   // if diff bit is 1
-  if ((x & (big_int(1) << q)) != 0) {
-    y = x & (~(big_int(1) << q));
-    y |= ((big_int(1) << (q)) - 1);
+  if ((x & mask_1[q]) != 0) {
+    y = x & mask_no_1[q];
+    y |= (mask_1[q] - 1);
 
     answer = find_sketch_predecessor(y);
   }
@@ -224,8 +233,8 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   else {
     // cout << "diff bit is 0 in pos " << q << endl;
 
-    y = x | (big_int(1) << q);
-    y &= ((~big_int(0)) << (q));
+    y = x | mask_1[q];
+    y &= mask_no_0[q];
 
     answer = find_sketch_predecessor(y);
 
@@ -243,6 +252,8 @@ fusiontree::fusiontree(vector<big_int> &v_) {
   mem = 0;
   r = 0;
   w = WVAR;
+
+  pre_calc_mask();
 
   add_in_array(v_);
 

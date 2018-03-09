@@ -14,7 +14,7 @@
 using namespace std;
 
 int main() {
-  vector<big_int> v;
+  /*vector<big_int> v;
 
   int n;
   cin >> n;
@@ -38,9 +38,9 @@ int main() {
     big_int pred = my_b_tree.get_predecessor(k_);
 
     cout << "predecessor(" << k << ") = " << pred << endl;
-  }
+  }*/
 
-  // test();
+  test();
 
   /*fusiontree t = fusiontree(v);
 
