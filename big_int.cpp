@@ -110,6 +110,9 @@ void big_int::operator*=(big_int x) { (*this) = (*this) * x; }
 ostream &operator<<(ostream &out, const big_int &bi) {
   for (int i = PSIZE - 1; i >= 0; i--) {
     out << bi.get_kth_bit(i);
+    if ((PSIZE - 1 - i) % PINTERV == PINTERV - 1) {
+      out << " ";
+    }
   }
 
   return out;
