@@ -8,6 +8,7 @@
 #include <iostream>
 #include "b-tree.hpp"
 #include "big_int.hpp"
+#include "bit_operations.hpp"
 #include "fusiontree.hpp"
 #include "test_generator.hpp"
 
@@ -39,6 +40,16 @@ int main() {
 
     cout << "predecessor(" << k << ") = " << pred << endl;
   }*/
+
+  /*bit_operations_initialize();
+
+  cout << big_int(1193) << endl;
+
+  cout << fast_most_significant_bit(1193) << endl;*/
+
+  // cout << big_int(141) << endl;
+
+  // fast_most_significant_bit(141);
 
   test();
 

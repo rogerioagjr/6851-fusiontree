@@ -41,6 +41,12 @@ class fusiontree {
 
   int w;  // word size
 
+  // bitmasks precaulculated to avoid use od <<
+  big_int mask_1[WSIZE], mask_no_1[WSIZE], mask_no_0[WSIZE];
+
+  // calculates the basic bitmasks used in bit tricks
+  void pre_calc_mask();
+
   // add numbers from a vector to array v
   void add_in_array(vector<big_int> &v_);
 
@@ -62,9 +68,6 @@ class fusiontree {
 
   // returns the value of r
   const int r_val() const;
-
-  // returns the value of k
-  const int k_val() const;
 
   // returns the value of b
   const big_int b_val() const;
