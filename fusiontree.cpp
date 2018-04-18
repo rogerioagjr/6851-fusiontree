@@ -143,12 +143,23 @@ const big_int fusiontree::important_bits() const { return b; }
 
 // returns the approximate sketch, in the fusion tree, of a given number
 const big_int fusiontree::approximate_sketch(const big_int &x) const {
-  return ((((x & b) * m) & sketch_mask) >> (ibit[0] + m_idx[0]));
+  big_int ret = ((((x & b) * m) & sketch_mask) >> (ibit[0] + m_idx[0]));
+  /*cout << "x = " << x << endl;
+  cout << "b = " << b << endl;
+  cout << "m = " << m << endl;
+  cout << "sketch_mask = " << sketch_mask << endl;
+  cout << "ibit[0] = " << ibit[0] << endl;
+  cout << "m_idx[0] = " << m_idx[0] << endl;*/
+  return ret;
 }
 
 // returns an integer with O(w^(1/5)) sketches of x, separated by zeroes
 const big_int fusiontree::sketch_k(const big_int &x) const {
-  return approximate_sketch(x) * k_mult;
+  big_int ret = approximate_sketch(x) * k_mult;
+  // cout << "approximate_sketch(" << x << ") = " << approximate_sketch(x) << endl;
+  // cout << "k_mult = " << k_mult << endl;
+  // cout << "ret = " << ret << endl;
+  return ret;
 }
 
 // returns the index of the biggest k in the tree succh that
@@ -157,6 +168,10 @@ const int fusiontree::find_sketch_predecessor(const big_int &x) const {
   int r4 = r * r * r * r;
 
   big_int diff = mem - sketch_k(x);
+
+  // cout << "sketch_k(" << x << ") = " << sketch_k(x) << endl;
+
+  // cout << "diff = " << diff << endl;
 
   diff &= diff_and;
 
@@ -179,8 +194,12 @@ const int fusiontree::find_sketch_predecessor(const big_int &x) const {
 // returns the index of the biggest k in the tree succh that k<=x
 // or -1 if there is no such k
 const int fusiontree::find_predecessor(const big_int &x) const {
+  // cout << "find_predecessor(" << x << ")" << endl;
+
   int idx1 = find_sketch_predecessor(x);
   int idx2 = idx1 + 1;
+
+  // cout << "idx1 = " << idx1 << endl;
 
   int q1, q2;
 
@@ -195,6 +214,8 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   } else {
     q2 = -2;
   }
+
+  // cout << "q1 = " << q1 << ", q2 = " << q2 << endl;
 
   if (q1 == -1) {
     return idx1;

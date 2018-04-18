@@ -83,9 +83,9 @@ b_tree::b_tree(vector<big_int> &keys) {
 }
 
 const big_int b_node::get_predecessor(const big_int &x) const {
-  cout << "get_predecessor(" << x << ", " << this << ")" << endl;
+  // cout << "get_predecessor(" << x << ", " << this << ")" << endl;
   int pred_index = key_tree->find_predecessor(x);
-  cout << "pred_index = " << pred_index << endl;
+  // cout << "pred_index = " << pred_index << endl;
   if (children[pred_index + 1] == NULL) {
     if (pred_index == -1) {
       return -1;

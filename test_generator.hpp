@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <cassert>
 #include "big_int.hpp"
 #include "bit_operations.hpp"
 #include "constants.hpp"
@@ -26,7 +27,8 @@ big_int random_big_int(int q = WSIZE) {
     b[i] = (rand() % 2);
   }
 
-  return big_int(b);
+  big_int ans = big_int(b);
+  return ans;
 }
 
 bool is_in_vector(big_int &x, vector<big_int> &v) {
@@ -50,11 +52,18 @@ int test() {
   srand(1998);
 
   int n, sz, m, q;
-  cin >> n >> sz >> m >> q;
+  // cin >> n >> sz >> m >> q;
+  n = 2;
+  m = 10;
+  sz = K;
+  q = WVAR;
+
 
   bool error = false;
 
   for (int t = 0; !error and t < n; t++) {
+    cout << "---RUNNING BATCH #" << t + 1 << "---" << endl;
+
     vector<big_int> v;
 
     for (int i = 0; i < sz; i++) {
@@ -69,11 +78,20 @@ int test() {
 
     sort(v.begin(), v.end());
 
+    for (int i = 0; i < v.size(); i++) {
+      if (i < v.size() - 1) {
+        assert(v[i] < v[i + 1]);
+      }
+    }
+
     fusiontree ft = fusiontree(v);
+
+    cout << "Finished Fusion Tree Construction" << endl << endl;
 
     // TEST 1 - check if the elements are inside the tree
 
     for (int i = 0; i < sz; i++) {
+      cout << "Test 1." << i + 1 << ": ";
       if (ft.find_predecessor(v[i]) != i) {
         // if (ft.pos(i) != v[i]) {
 
@@ -107,13 +125,18 @@ int test() {
         error = true;
 
         break;
+      } else {
+        cout << "OK" << endl;
       }
     }
 
     if (error) break;
 
+    cout << endl;
+
     // TEST 2 - check predecessor of random numbers
     for (int i = 0; i < m; i++) {
+      cout << "Test 2." << i + 1 << ": ";
       big_int x = random_big_int(q);
 
       if (ft.find_predecessor(x) != find_predecessor_in_vector(x, v)) {
@@ -137,11 +160,15 @@ int test() {
         error = true;
 
         break;
+      } else {
+        cout << "OK" << endl;
       }
     }
+
+    cout << endl << endl;
   }
 
-  if (!error) cout << "OK" << endl;
+  if (!error) cout << "DONE!" << endl;
 
   return 0;
 }
@@ -178,6 +205,8 @@ int diff_test() {
   if (!mistakes) {
     cout << "No mistakes!" << endl;
   }
+
+  return 0;
 }
 
 #endif

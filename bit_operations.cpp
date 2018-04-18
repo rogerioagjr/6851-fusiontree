@@ -45,6 +45,7 @@ void bit_operations_initialize() {
   for (int i = 0; i < SQRTW; i++) {
     SK_MULT |= t_mask_1[i * (SQRTW + 1)];
   }
+
 }
 
 const big_int mask_1(const int &x) { return t_mask_1[x]; }

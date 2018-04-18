@@ -19,13 +19,17 @@ OBJECTS = $(SOURCES:.cpp=.o)
 PROGRAM = main
 
 COMP = clang++
-COMPFLAGS = -Wall -g
+COMPFLAGS = -Wall -g -mavx2 -pg
 LDFLAGS = -lm
 
 ifeq ($(DEBUG),1)
 	COMPFLAGS += -O0
 else
 	COMPFLAGS += -O3
+endif
+
+ifeq ($(NAIVE),1)
+	COMPFLAGS += -DNAIVE=1
 endif
 
 all:		$(PROGRAM)

@@ -14,7 +14,7 @@
 #include "big_int.hpp"
 #include "constants.hpp"
 
-// bitmasks precaulculated to avoid use od <<
+// bitmasks precaulculated to avoid use of <<
 static big_int t_mask_1[WSIZE], t_mask_no_1[WSIZE], t_mask_no_0[WSIZE], F, M,
     SK, K_POT, SK_F, SK_MULT;
 
