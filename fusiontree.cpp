@@ -14,6 +14,109 @@
 
 using namespace std;
 
+// initializes the tricks of the library
+void fusiontree::bit_operations_initialize() {
+  // calculates the basic bitmasks used in bit tricks
+  for (int i = 0; i < WSIZE; i++) {
+    t_mask_1[i] = (big_int(1) << i);
+    t_mask_no_1[i] = (~big_int(1) << i);
+    t_mask_no_0[i] = (~big_int(0) << i);
+  }
+
+  // Find the value of F
+  for (int i = 0; i < SQRTW; i++) {
+    F = F | (t_mask_1[SQRTW - 1 + i * SQRTW]);
+  }
+
+  // Find the value of M
+  for (int i = 0; i < SQRTW; i++) {
+    M = M | (t_mask_1[WVAR - (SQRTW - 1) - i * SQRTW + i]);
+  }
+
+  // Find the value of SK_F
+  for (int i = 0; i < SQRTW; i++) {
+    SK_F = SK_F | (t_mask_1[SQRTW + i * (SQRTW + 1)]);
+  }
+
+  // Find the value of SK
+  for (int i = 0; i < SQRTW; i++) {
+    SK = SK | (t_mask_1[i * (SQRTW + 1)]);
+  }
+
+  // Find the value of K_POT
+  for (int i = 0; i < SQRTW; i++) {
+    K_POT = K_POT | (t_mask_1[SQRTW - i - 1 + i * (SQRTW + 1)]);
+  }
+
+  // Find the value of SK_MULT
+  for (int i = 0; i < SQRTW; i++) {
+    SK_MULT = SK_MULT | (t_mask_1[i * (SQRTW + 1)]);
+  }
+}
+
+const big_int fusiontree::mask_1(const int &x) const { return t_mask_1[x]; }
+
+const big_int fusiontree::mask_no_1(const int &x) const {
+  return t_mask_no_1[x];
+}
+
+const big_int fusiontree::mask_no_0(const int &x) const {
+  return t_mask_no_0[x];
+}
+
+// first step of fast_most_significant_bit
+const int fusiontree::sqrtw_first_bit(big_int x) const {
+  x = x * SK;
+  x = x | SK_F;
+
+  x = x - K_POT;
+
+  x = x & SK_F;
+
+  x = x * SK_MULT;
+
+  x = x >> ((SQRTW * SQRTW) + (SQRTW - 1));
+
+  x = x & (~mask_no_0(SQRTW + 1));
+
+  return x.to_int() - 1;
+}
+
+// find the most significant bit of a big_int in O(1) in word RAM model
+const int fusiontree::fast_most_significant_bit(big_int const &x) const {
+  big_int x_first_bits = x & F;
+
+  big_int x_remain = x ^ x_first_bits;
+
+  x_remain = F - x_remain;
+
+  x_remain = x_remain & F;
+  x_remain = x_remain ^ F;
+
+  big_int x_clusters = x_remain | x_first_bits;
+
+  x_clusters = ((x_clusters * M) >> WVAR) & (~mask_no_0(SQRTW));
+
+  int right_cluster_idx = sqrtw_first_bit(x_clusters);
+
+  big_int right_cluster =
+      (x >> (right_cluster_idx * SQRTW)) & (~mask_no_0(SQRTW));
+
+  int ans = right_cluster_idx * SQRTW + sqrtw_first_bit(right_cluster);
+
+  if (ans < 0) {
+    ans = -1;
+  }
+
+  return ans;
+}
+
+// find the longest common prefix between two big_ints in O(1) in word RAM model
+const int fusiontree::fast_first_diff(big_int const &x,
+                                      big_int const &y) const {
+  return fast_most_significant_bit(x ^ y);
+}
+
 // add numbers from a vector to array v
 void fusiontree::add_in_array(vector<big_int> &v_) {
   sz = v_.size();
@@ -108,39 +211,6 @@ void fusiontree::set_parallel_comparison() {
   }
 }
 
-// returns the val of mem
-const big_int fusiontree::mem_val() const { return mem; }
-
-// returns the mask sketch_mask
-const big_int fusiontree::sketch_mask_val() const { return sketch_mask; }
-
-// returns the value of r
-const int fusiontree::r_val() const { return r; }
-
-// returns the value of k
-const int fusiontree::k_val() const { return k; }
-
-// returns the value of b
-const big_int fusiontree::b_val() const { return b; }
-
-// returns the value of b_i
-const int fusiontree::b_pos(int i) const { return ibit[i]; }
-
-// returns the value of m
-const big_int fusiontree::m_val() const { return m; }
-
-// returns the value of m_i
-const int fusiontree::m_pos(int i) const { return m_idx[i]; }
-
-// returns the number of integers stored
-const int fusiontree::size() const { return sz; }
-
-// returns the number in a given position in the tree
-const big_int fusiontree::pos(int i) const { return v[i]; }
-
-// return a bitmask with all the important bits turned on
-const big_int fusiontree::important_bits() const { return b; }
-
 // returns the approximate sketch, in the fusion tree, of a given number
 const big_int fusiontree::approximate_sketch(const big_int &x) const {
   big_int ret = ((((x & b) * m) & sketch_mask) >> (ibit[0] + m_idx[0]));
@@ -177,6 +247,12 @@ const int fusiontree::find_sketch_predecessor(const big_int &x) const {
 
   return answer;
 }
+
+// returns the number of integers stored
+const int fusiontree::size() const { return sz; }
+
+// returns the number in a given position in the tree
+const big_int fusiontree::pos(int i) const { return v[i]; }
 
 // returns the index of the biggest k in the tree succh that k<=x
 // or -1 if there is no such k
@@ -254,17 +330,6 @@ fusiontree::fusiontree(vector<big_int> &v_) {
   find_m();
 
   set_parallel_comparison();
-}
-
-// checks if the sketches of the integers are in ascending order
-const bool fusiontree::sketch_ok() const {
-  for (int i = 1; i < size(); i++) {
-    if (approximate_sketch(pos(i)) <= approximate_sketch(pos(i - 1))) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 // prints all the numbers, in binary form, in a fusion tree

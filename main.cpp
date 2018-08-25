@@ -8,7 +8,6 @@
 #include <iostream>
 #include "b-tree.hpp"
 #include "big_int.hpp"
-#include "bit_operations.hpp"
 #include "fusiontree.hpp"
 #include "test_generator.hpp"
 

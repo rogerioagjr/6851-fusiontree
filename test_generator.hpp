@@ -14,8 +14,8 @@
 #include <ctime>
 #include <iostream>
 #include "big_int.hpp"
-#include "bit_operations.hpp"
 #include "constants.hpp"
+#include "extra.hpp"
 #include "fusiontree.hpp"
 
 using namespace std;
@@ -264,7 +264,7 @@ int public_test() {
   return 0;
 }
 
-int diff_test() {
+/*int diff_test() {
   // cout << fast_most_significant_bit(big_int(0)) << " "
   //     << most_significant_bit(big_int(0)) << endl;
 
@@ -298,6 +298,6 @@ int diff_test() {
   }
 
   return 0;
-}
+}*/
 
 #endif

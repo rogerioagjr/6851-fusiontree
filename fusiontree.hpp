@@ -13,14 +13,24 @@
 #include <vector>
 
 #include "big_int.hpp"
-#include "bit_operations.hpp"
 #include "constants.hpp"
 
 using namespace std;
 
 class fusiontree {
  private:
-  int k;        // number of integers
+  /*// environment constants
+  int WSIZE; 6300  // Size the big_int must have - O(max(K^5+K^4,w+sqrt(w))
+  int WVAR; 3136  // Value of w, the maximum number of bits of an element of a
+  fusion tree int SQRTW; 56     // Value of sqrt(w), necessary for most
+  significant bit int K; 5          // Maximum size of a fusion tree -
+  O(WVAR^(1/5))*/
+
+  // bitmasks precaulculated to avoid use of <<
+  big_int t_mask_1[WSIZE], t_mask_no_1[WSIZE], t_mask_no_0[WSIZE], F, M, SK,
+      K_POT, SK_F, SK_MULT;
+
+  int k;        // maximum number of integers in a fusion tree
   big_int mem;  // sketched integers
   int q;        // word size
 
@@ -41,6 +51,24 @@ class fusiontree {
 
   int w;  // word size
 
+  // calculates the basic bitmasks used in bit tricks
+  void bit_operations_initialize();
+
+  // access the basic bitmasks used in bit tricks
+  const big_int mask_1(const int &x) const;
+  const big_int mask_no_1(const int &x) const;
+  const big_int mask_no_0(const int &x) const;
+
+  // first step of fast_most_significant_bit
+  const int sqrtw_first_bit(big_int x) const;
+
+  // find the most significant bit of a big_int in O(1) in word RAM model
+  const int fast_most_significant_bit(big_int const &x) const;
+
+  // find the longest common prefix between two big_ints in O(1) in word RAM
+  // model
+  const int fast_first_diff(big_int const &x, big_int const &y) const;
+
   // add numbers from a vector to array v
   void add_in_array(vector<big_int> &v_);
 
@@ -52,33 +80,6 @@ class fusiontree {
 
   // sets the variables used in parallel comparison
   void set_parallel_comparison();
-
-  // returns the val of mem
-  const big_int mem_val() const;
-
-  // returns the mask sketch_mask
-  const big_int sketch_mask_val() const;
-
-  // returns the value of r
-  const int r_val() const;
-
-  // returns the value of k
-  const int k_val() const;
-
-  // returns the value of b
-  const big_int b_val() const;
-
-  // returns the value of b_i
-  const int b_pos(int i) const;
-
-  // returns the value of m
-  const big_int m_val() const;
-
-  // returns the value of m_i
-  const int m_pos(int i) const;
-
-  // return a bitmask with all the important bits turned on
-  const big_int important_bits() const;
 
   // returns the approximate sketch, in the fusion tree, of a given number
   const big_int approximate_sketch(const big_int &x) const;
@@ -103,9 +104,6 @@ class fusiontree {
 
   // v_ is a vector with the integers to be stored
   fusiontree(vector<big_int> &v_);
-
-  // checks if the sketches of the integers are in ascending order
-  const bool sketch_ok() const;
 };
 
 // prints all the numbers, in binary form, in a fusion tree
