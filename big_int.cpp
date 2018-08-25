@@ -9,9 +9,9 @@
 
 #include "big_int.hpp"
 
-#include <iostream>
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <iostream>
 
 using namespace std;
 
@@ -35,12 +35,10 @@ int clz(big_int const &x) {
   return res;
 }
 
-int most_significant_bit(big_int const &x) {
-  return WSIZE - clz(x) - 1;
-}
+int most_significant_bit(big_int const &x) { return WSIZE - clz(x) - 1; }
 
 int get_kth_bit_from_uint(uint64_t val, int k) {
-  return ((val & (((uint64_t) 1) << k)) == 0) ? 0 : 1;
+  return ((val & (((uint64_t)1) << k)) == 0) ? 0 : 1;
 }
 
 void print_in_binary(uint64_t val) {
@@ -55,7 +53,7 @@ void print_m256i(__m256i val) {
   }
 }
 
-void store_from_m256i(uint64_t* ptr, __m256i &val) {
+void store_from_m256i(uint64_t *ptr, __m256i &val) {
   for (int k = 0; k < 4; k++) {
     *(ptr + k) = _mm256_extract_epi64(val, k);
   }
@@ -76,7 +74,8 @@ big_int::big_int(const bitset<WSIZE> &b) {
     uint64_t cur_value = 0;
     int cur_start = i * 64;
     for (int k = cur_start; k < cur_start + 64 && k < WSIZE; k++) {
-      cur_value = cur_value + (((uint64_t)((b[k] == 0) ? 0 : 1)) << (k - cur_start));
+      cur_value =
+          cur_value + (((uint64_t)((b[k] == 0) ? 0 : 1)) << (k - cur_start));
     }
     num[i] = cur_value;
     cur_start += 64;
@@ -85,7 +84,8 @@ big_int::big_int(const bitset<WSIZE> &b) {
 
 __m256i big_int::load_to_m256i(int index) const {
   // cout << "Called load_to_m256i(" << index << ")" << endl;
-  return _mm256_setr_epi64x(num[index], num[index + 1], num[index + 2], num[index + 3]);
+  return _mm256_setr_epi64x(num[index], num[index + 1], num[index + 2],
+                            num[index + 3]);
 }
 
 void big_int::test_extraction() const {
@@ -124,7 +124,7 @@ big_int big_int::operator~() const {
 
 int get_msb_from_uint(uint64_t &x) {
   for (int i = 63; i >= 0; i--) {
-    if ((x & (((uint64_t) 1) << i)) != 0) {
+    if ((x & (((uint64_t)1) << i)) != 0) {
       return i;
     }
   }
@@ -156,18 +156,14 @@ bool big_int::operator<(const big_int x) const {
   return (x > *this);
 }
 
-bool big_int::operator<=(const big_int x) const {
-  return !(*this > x);
-}
+bool big_int::operator<=(const big_int x) const { return !(*this > x); }
 
-bool big_int::operator>=(const big_int x) const {
-  return !(*this < x);
-}
+bool big_int::operator>=(const big_int x) const { return !(*this < x); }
 
 bool big_int::operator==(const big_int x) const {
   // cout << "Called == for " << (*this) << " and " << x << endl;
   bool are_different = false;
-  for (int i = 0; i < BIGARRAYSIZE; i+= 4) {
+  for (int i = 0; i < BIGARRAYSIZE; i += 4) {
     __m256i this_vec = this->load_to_m256i(i);
     __m256i that_vec = x.load_to_m256i(i);
     __m256i result = _mm256_cmpeq_epi64(this_vec, that_vec);
@@ -183,15 +179,14 @@ bool big_int::operator==(const big_int x) const {
   return !(are_different);
 }
 
-bool big_int::operator!=(const big_int x) const {
-  return !(*this == x);
-}
+bool big_int::operator!=(const big_int x) const { return !(*this == x); }
 
 big_int big_int::operator|(const big_int x) const {
   // cout << "Called |" << endl;
   big_int or_val = big_int();
   for (int i = 0; i < BIGARRAYSIZE; i += 4) {
-    __m256i result = _mm256_or_si256(this->load_to_m256i(i), x.load_to_m256i(i));
+    __m256i result =
+        _mm256_or_si256(this->load_to_m256i(i), x.load_to_m256i(i));
     store_from_m256i(&or_val.num[i], result);
   }
   return or_val;
@@ -201,7 +196,8 @@ big_int big_int::operator&(const big_int x) const {
   // cout << "Called &" << endl;
   big_int and_val = big_int();
   for (int i = 0; i < BIGARRAYSIZE; i += 4) {
-    __m256i result = _mm256_and_si256(this->load_to_m256i(i), x.load_to_m256i(i));
+    __m256i result =
+        _mm256_and_si256(this->load_to_m256i(i), x.load_to_m256i(i));
     store_from_m256i(&and_val.num[i], result);
   }
   return and_val;
@@ -211,7 +207,8 @@ big_int big_int::operator^(const big_int x) const {
   // cout << "Called ^" << endl;
   big_int xor_val = big_int();
   for (int i = 0; i < BIGARRAYSIZE; i += 4) {
-    __m256i result = _mm256_xor_si256(this->load_to_m256i(i), x.load_to_m256i(i));
+    __m256i result =
+        _mm256_xor_si256(this->load_to_m256i(i), x.load_to_m256i(i));
     store_from_m256i(&xor_val.num[i], result);
   }
   return xor_val;
@@ -225,7 +222,8 @@ big_int big_int::operator+(const big_int x) const {
 
   for (int i = 0; i < WSIZE; i++) {
     result_bit[i] = carry_bit[i] ^ this_bit[i] ^ that_bit[i];
-    if ((this_bit[i] & that_bit[i]) || ((this_bit[i] | that_bit[i]) & carry_bit[i])) {
+    if ((this_bit[i] & that_bit[i]) ||
+        ((this_bit[i] | that_bit[i]) & carry_bit[i])) {
       if (i < WSIZE - 1) {
         carry_bit[i + 1] = 1;
       }
@@ -254,25 +252,15 @@ big_int big_int::operator>>(const int x) const {
   return big_int(this->to_bitset() >> x);
 }
 
-void big_int::operator+=(big_int x) {
-  *this = (*this) + x;
-}
+void big_int::operator+=(big_int x) { *this = (*this) + x; }
 
-void big_int::operator-=(big_int x) {
-  *this = (*this) - x;
-}
+void big_int::operator-=(big_int x) { *this = (*this) - x; }
 
-void big_int::operator|=(big_int x) {
-  *this = (*this) | x;
-}
+void big_int::operator|=(big_int x) { *this = (*this) | x; }
 
-void big_int::operator&=(big_int x) {
-  *this = (*this) & x;
-}
+void big_int::operator&=(big_int x) { *this = (*this) & x; }
 
-void big_int::operator^=(big_int x) {
-  *this = (*this) ^ x;
-}
+void big_int::operator^=(big_int x) { *this = (*this) ^ x; }
 
 big_int big_int::operator*(const big_int x) const {
   // cout << "Called *" << endl;
@@ -287,9 +275,7 @@ big_int big_int::operator*(const big_int x) const {
   return res;
 }
 
-void big_int::operator*=(big_int x) {
-  *this = (*this) * x;
-}
+void big_int::operator*=(big_int x) { *this = (*this) * x; }
 
 bitset<WSIZE> big_int::to_bitset() const {
   // cout << "Called to_bitset()" << endl;
@@ -310,8 +296,8 @@ ostream &operator<<(ostream &out, const big_int &bi) {
 
 #else
 
-#include "big_int.hpp"
 #include <iostream>
+#include "big_int.hpp"
 
 using namespace std;
 
@@ -319,20 +305,9 @@ big_int::big_int(int x) { bs = x; }
 
 big_int::big_int(const bitset<WSIZE> &b) { bs = b; }
 
-int big_int::get_kth_bit(int k) const {
-  if (bool(bs[k]))
-    return 1;
-  else
-    return 0;
-}
-
 int big_int::to_int() const {
   int x = bs.to_ulong();
   return x;
-}
-
-void big_int::test_extraction() const {
-  return;
 }
 
 big_int big_int::operator~() const { return big_int(~bs); }
@@ -391,16 +366,6 @@ big_int big_int::operator+(const big_int x) const {
 
 big_int big_int::operator-(const big_int x) const { return ((*this) + (-x)); }
 
-void big_int::operator+=(big_int x) { (*this) = (*this) + x; }
-
-void big_int::operator-=(big_int x) { (*this) = (*this) - x; }
-
-void big_int::operator|=(big_int x) { (*this) = (*this) | x; }
-
-void big_int::operator&=(big_int x) { (*this) = (*this) & x; }
-
-void big_int::operator^=(big_int x) { (*this) = (*this) ^ x; }
-
 big_int big_int::operator*(const big_int x) const {
   big_int res;
 
@@ -412,8 +377,6 @@ big_int big_int::operator*(const big_int x) const {
 
   return res;
 }
-
-void big_int::operator*=(big_int x) { (*this) = (*this) * x; }
 
 ostream &operator<<(ostream &out, const big_int &bi) {
   for (int i = PSIZE - 1; i >= 0; i--) {

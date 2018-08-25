@@ -53,7 +53,6 @@ class fusiontree {
   // sets the variables used in parallel comparison
   void set_parallel_comparison();
 
- public:
   // returns the val of mem
   const big_int mem_val() const;
 
@@ -78,12 +77,6 @@ class fusiontree {
   // returns the value of m_i
   const int m_pos(int i) const;
 
-  // returns the number of integers stored
-  const int size() const;
-
-  // returns the number in a given position in the tree
-  const big_int pos(int i) const;
-
   // return a bitmask with all the important bits turned on
   const big_int important_bits() const;
 
@@ -96,6 +89,13 @@ class fusiontree {
   // returns the index of the biggest k in the tree succh that
   // sketch(k)<=sketch(x)
   const int find_sketch_predecessor(const big_int &x) const;
+
+ public:
+  // returns the number of integers stored
+  const int size() const;
+
+  // returns the number in a given position in the tree
+  const big_int pos(int i) const;
 
   // returns the index of the biggest k in the tree succh that k<=x
   // or -1 if there is no such k

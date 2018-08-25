@@ -36,7 +36,7 @@ void fusiontree::find_important_bits() {
       if (temp < diff_point) diff_point = temp;
     }
 
-    b |= mask_1(diff_point);
+    b = b | mask_1(diff_point);
   }
 
   for (int i = 0; i < WSIZE; i++) {
@@ -62,7 +62,7 @@ void fusiontree::find_m() {
         for (int k1 = 0; k1 < r; k1++) {
           for (int k2 = 0; k2 < r; k2++) {
             if ((j + ibit[k1] - ibit[k2]) >= 0) {
-              tag |= mask_1(j + ibit[k1] - ibit[k2]);
+              tag = tag | (mask_1(j + ibit[k1] - ibit[k2]));
             }
           }
         }
@@ -74,11 +74,11 @@ void fusiontree::find_m() {
 
   // set sketch_mask
   for (int i = 0; i < r; i++) {
-    m_idx[i] += r3 * ((w - ibit[i] + i * r3) / r3);
+    m_idx[i] = m_idx[i] + (r3 * ((w - ibit[i] + i * r3) / r3));
 
-    m |= mask_1(m_idx[i]);
+    m = m | mask_1(m_idx[i]);
 
-    sketch_mask |= mask_1(ibit[i] + m_idx[i]);
+    sketch_mask = sketch_mask | (mask_1(ibit[i] + m_idx[i]));
   }
 }
 
@@ -88,23 +88,23 @@ void fusiontree::set_parallel_comparison() {
 
   // set mem
   for (int i = 0; i < k; i++) {
-    mem |= mask_1((i + 1) * r4 + i);
-    mem |= (approximate_sketch(pos(k - 1 - i)) << i * (r4 + 1));
+    mem = mem | mask_1((i + 1) * r4 + i);
+    mem = mem | (approximate_sketch(pos(k - 1 - i)) << i * (r4 + 1));
   }
 
   // set k_mult
   for (int i = 0; i < k; i++) {
-    k_mult |= mask_1(i * (r4 + 1));
+    k_mult = k_mult | mask_1(i * (r4 + 1));
   }
 
   // set diff_and
   for (int i = 0; i < k; i++) {
-    diff_and |= mask_1((i + 1) * r4 + i);
+    diff_and = diff_and | mask_1((i + 1) * r4 + i);
   }
 
   // set pos_and
   for (int i = 0; i < r4; i++) {
-    pos_and |= mask_1(i);
+    pos_and = pos_and | mask_1(i);
   }
 }
 
@@ -144,21 +144,12 @@ const big_int fusiontree::important_bits() const { return b; }
 // returns the approximate sketch, in the fusion tree, of a given number
 const big_int fusiontree::approximate_sketch(const big_int &x) const {
   big_int ret = ((((x & b) * m) & sketch_mask) >> (ibit[0] + m_idx[0]));
-  /*cout << "x = " << x << endl;
-  cout << "b = " << b << endl;
-  cout << "m = " << m << endl;
-  cout << "sketch_mask = " << sketch_mask << endl;
-  cout << "ibit[0] = " << ibit[0] << endl;
-  cout << "m_idx[0] = " << m_idx[0] << endl;*/
   return ret;
 }
 
 // returns an integer with O(w^(1/5)) sketches of x, separated by zeroes
 const big_int fusiontree::sketch_k(const big_int &x) const {
   big_int ret = approximate_sketch(x) * k_mult;
-  // cout << "approximate_sketch(" << x << ") = " << approximate_sketch(x) << endl;
-  // cout << "k_mult = " << k_mult << endl;
-  // cout << "ret = " << ret << endl;
   return ret;
 }
 
@@ -169,17 +160,13 @@ const int fusiontree::find_sketch_predecessor(const big_int &x) const {
 
   big_int diff = mem - sketch_k(x);
 
-  // cout << "sketch_k(" << x << ") = " << sketch_k(x) << endl;
+  diff = diff & diff_and;
 
-  // cout << "diff = " << diff << endl;
-
-  diff &= diff_and;
-
-  diff *= k_mult;
+  diff = diff * k_mult;
 
   diff = diff >> ((k * r4) + (k - 1));
 
-  diff &= pos_and;
+  diff = diff & pos_and;
 
   int answer = size() - diff.to_int() - 1;
 
@@ -194,12 +181,8 @@ const int fusiontree::find_sketch_predecessor(const big_int &x) const {
 // returns the index of the biggest k in the tree succh that k<=x
 // or -1 if there is no such k
 const int fusiontree::find_predecessor(const big_int &x) const {
-  // cout << "find_predecessor(" << x << ")" << endl;
-
   int idx1 = find_sketch_predecessor(x);
   int idx2 = idx1 + 1;
-
-  // cout << "idx1 = " << idx1 << endl;
 
   int q1, q2;
 
@@ -215,8 +198,6 @@ const int fusiontree::find_predecessor(const big_int &x) const {
     q2 = -2;
   }
 
-  // cout << "q1 = " << q1 << ", q2 = " << q2 << endl;
-
   if (q1 == -1) {
     return idx1;
   }
@@ -228,8 +209,6 @@ const int fusiontree::find_predecessor(const big_int &x) const {
 
   big_int y;
 
-  // cout << q1 << " " << q2 << endl;
-
   int q;
 
   if (q1 == -2) q = q2;
@@ -239,7 +218,7 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   // if diff bit is 1
   if ((x & mask_1(q)) != 0) {
     y = x & mask_no_1(q);
-    y |= (mask_1(q) - 1);
+    y = y | (mask_1(q) - 1);
 
     answer = find_sketch_predecessor(y);
   }
@@ -247,7 +226,7 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   // if diff bit is 0
   else {
     y = x | mask_1(q);
-    y &= mask_no_0(q);
+    y = y & mask_no_0(q);
 
     answer = find_sketch_predecessor(y);
 

@@ -18,34 +18,33 @@ void bit_operations_initialize() {
 
   // Find the value of F
   for (int i = 0; i < SQRTW; i++) {
-    F |= t_mask_1[SQRTW - 1 + i * SQRTW];
+    F = F | (t_mask_1[SQRTW - 1 + i * SQRTW]);
   }
 
   // Find the value of M
   for (int i = 0; i < SQRTW; i++) {
-    M |= t_mask_1[WVAR - (SQRTW - 1) - i * SQRTW + i];
+    M = M | (t_mask_1[WVAR - (SQRTW - 1) - i * SQRTW + i]);
   }
 
   // Find the value of SK_F
   for (int i = 0; i < SQRTW; i++) {
-    SK_F |= t_mask_1[SQRTW + i * (SQRTW + 1)];
+    SK_F = SK_F | (t_mask_1[SQRTW + i * (SQRTW + 1)]);
   }
 
   // Find the value of SK
   for (int i = 0; i < SQRTW; i++) {
-    SK |= t_mask_1[i * (SQRTW + 1)];
+    SK = SK | (t_mask_1[i * (SQRTW + 1)]);
   }
 
   // Find the value of K_POT
   for (int i = 0; i < SQRTW; i++) {
-    K_POT |= t_mask_1[SQRTW - i - 1 + i * (SQRTW + 1)];
+    K_POT = K_POT | (t_mask_1[SQRTW - i - 1 + i * (SQRTW + 1)]);
   }
 
   // Find the value of SK_MULT
   for (int i = 0; i < SQRTW; i++) {
-    SK_MULT |= t_mask_1[i * (SQRTW + 1)];
+    SK_MULT = SK_MULT | (t_mask_1[i * (SQRTW + 1)]);
   }
-
 }
 
 const big_int mask_1(const int &x) { return t_mask_1[x]; }
@@ -61,18 +60,18 @@ const int first_diff(big_int const &x, big_int const &y) {
 
 // first step of fast_most_significant_bit
 const int sqrtw_first_bit(big_int x) {
-  x *= SK;
-  x |= SK_F;
+  x = x * SK;
+  x = x | SK_F;
 
   x = x - K_POT;
 
-  x &= SK_F;
+  x = x & SK_F;
 
-  x *= SK_MULT;
+  x = x * SK_MULT;
 
   x = x >> ((SQRTW * SQRTW) + (SQRTW - 1));
 
-  x &= ~mask_no_0(SQRTW + 1);
+  x = x & (~mask_no_0(SQRTW + 1));
 
   return x.to_int() - 1;
 }
@@ -81,20 +80,12 @@ const int sqrtw_first_bit(big_int x) {
 const int fast_most_significant_bit(big_int const &x) {
   big_int x_first_bits = x & F;
 
-  // cout << "1: " << x_first_bits << endl;
-
   big_int x_remain = x ^ x_first_bits;
-
-  // cout << "2: " << x_remain << endl;
 
   x_remain = F - x_remain;
 
-  x_remain &= F;
-  x_remain ^= F;
-
-  // cout << "3: " << x_remain << endl;
-
-  // cout << "4: " << F << endl;
+  x_remain = x_remain & F;
+  x_remain = x_remain ^ F;
 
   big_int x_clusters = x_remain | x_first_bits;
 

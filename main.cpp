@@ -51,7 +51,7 @@ int main() {
 
   // fast_most_significant_bit(141);
 
-  test();
+  public_test();
 
   // test_big_int();
 

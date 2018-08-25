@@ -9,10 +9,10 @@
 #define test_generator_hpp
 
 #include <algorithm>
+#include <cassert>
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
-#include <cassert>
 #include "big_int.hpp"
 #include "bit_operations.hpp"
 #include "constants.hpp"
@@ -48,7 +48,7 @@ int find_predecessor_in_vector(big_int &x, vector<big_int> &v) {
   return (v.size() - 1);
 }
 
-int test() {
+/*int test() {
   srand(1998);
 
   int n, sz, m, q;
@@ -57,7 +57,6 @@ int test() {
   m = 10;
   sz = K;
   q = WVAR;
-
 
   bool error = false;
 
@@ -156,6 +155,98 @@ int test() {
           cout << ft.approximate_sketch(ft.pos(i)) << endl;
 
         cout << endl << ft.approximate_sketch(x) << endl;
+
+        error = true;
+
+        break;
+      } else {
+        cout << "OK" << endl;
+      }
+    }
+
+    cout << endl << endl;
+  }
+
+  if (!error) cout << "DONE!" << endl;
+
+  return 0;
+}*/
+
+int public_test() {
+  srand(1998);
+
+  int n, sz, m, q;
+  n = 2;
+  m = 10;
+  sz = K;
+  q = WVAR;
+
+  bool error = false;
+
+  for (int t = 0; !error and t < n; t++) {
+    cout << "---RUNNING BATCH #" << t + 1 << "---" << endl;
+
+    vector<big_int> v;
+
+    for (int i = 0; i < sz; i++) {
+      big_int x;
+
+      do {
+        x = random_big_int(q);
+      } while (is_in_vector(x, v));
+
+      v.push_back(x);
+    }
+
+    sort(v.begin(), v.end());
+
+    for (int i = 0; i < v.size(); i++) {
+      if (i < v.size() - 1) {
+        assert(v[i] < v[i + 1]);
+      }
+    }
+
+    fusiontree ft = fusiontree(v);
+
+    cout << "Finished Fusion Tree Construction" << endl << endl;
+
+    // TEST 1 - check if the elements are inside the tree
+
+    for (int i = 0; i < sz; i++) {
+      cout << "Test 1." << i + 1 << ": ";
+      if (ft.find_predecessor(v[i]) != i) {
+        // if (ft.pos(i) != v[i]) {
+
+        cout << "input " << t << endl;
+        cout << "error, TEST 1 for following integers:" << endl;
+
+        cout << ft.find_predecessor(v[i]) << "!=" << i << endl;
+
+        error = true;
+
+        break;
+      } else {
+        cout << "OK" << endl;
+      }
+    }
+
+    if (error) break;
+
+    cout << endl;
+
+    // TEST 2 - check predecessor of random numbers
+    for (int i = 0; i < m; i++) {
+      cout << "Test 2." << i + 1 << ": ";
+      big_int x = random_big_int(q);
+
+      if (ft.find_predecessor(x) != find_predecessor_in_vector(x, v)) {
+        cout << "error, TEST 2 for following integers:" << endl << ft << endl;
+
+        cout << "searching for:" << endl << x << endl;
+
+        cout << "fusion tree says " << ft.find_predecessor(x)
+             << " when it should say " << find_predecessor_in_vector(x, v)
+             << endl;
 
         error = true;
 
