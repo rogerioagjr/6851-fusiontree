@@ -30,7 +30,8 @@ void fusiontree::bit_operations_initialize() {
 
   // Find the value of M
   for (int i = 0; i < sqrt_element_size; i++) {
-    M = M | (t_mask_1[element_size - (sqrt_element_size - 1) - i * sqrt_element_size + i]);
+    M = M | (t_mask_1[element_size - (sqrt_element_size - 1) -
+                      i * sqrt_element_size + i]);
   }
 
   // Find the value of SK_F
@@ -45,7 +46,8 @@ void fusiontree::bit_operations_initialize() {
 
   // Find the value of K_POT
   for (int i = 0; i < sqrt_element_size; i++) {
-    K_POT = K_POT | (t_mask_1[sqrt_element_size - i - 1 + i * (sqrt_element_size + 1)]);
+    K_POT = K_POT |
+            (t_mask_1[sqrt_element_size - i - 1 + i * (sqrt_element_size + 1)]);
   }
 
   // Find the value of SK_MULT
@@ -95,14 +97,16 @@ const int fusiontree::fast_most_significant_bit(big_int const &x) const {
 
   big_int x_clusters = x_remain | x_first_bits;
 
-  x_clusters = ((x_clusters * M) >> element_size) & (~mask_no_0(sqrt_element_size));
+  x_clusters =
+      ((x_clusters * M) >> element_size) & (~mask_no_0(sqrt_element_size));
 
   int right_cluster_idx = sqrtw_first_bit(x_clusters);
 
-  big_int right_cluster =
-      (x >> (right_cluster_idx * sqrt_element_size)) & (~mask_no_0(sqrt_element_size));
+  big_int right_cluster = (x >> (right_cluster_idx * sqrt_element_size)) &
+                          (~mask_no_0(sqrt_element_size));
 
-  int ans = right_cluster_idx * sqrt_element_size + sqrtw_first_bit(right_cluster);
+  int ans =
+      right_cluster_idx * sqrt_element_size + sqrtw_first_bit(right_cluster);
 
   if (ans < 0) {
     ans = -1;
@@ -217,7 +221,8 @@ const big_int fusiontree::approximate_sketch(const big_int &x) const {
   return ret;
 }
 
-// returns an integer with O(element_size^(1/5)) sketches of x, separated by zeroes
+// returns an integer with O(element_size^(1/5)) sketches of x, separated by
+// zeroes
 const big_int fusiontree::sketch_k(const big_int &x) const {
   big_int ret = approximate_sketch(x) * k_mult;
   return ret;
@@ -318,24 +323,32 @@ const int fusiontree::find_predecessor(const big_int &x) const {
 }
 
 // v_ is a vector with the integers to be stored
-fusiontree::fusiontree(vector<big_int> &v_, int k_, int word_size_, int element_size_) {
-  
-  k = k_, word_size = word_size_, element_size = element_size_;
+fusiontree::fusiontree(vector<big_int> &v_, int k_, int word_size_,
+                       int element_size_)
+    : k(k_),
+      word_size(word_size_),
+      element_size(element_size_),
+      t_mask_1(new (big_int[word_size])),
+      t_mask_no_1(new (big_int[word_size])),
+      t_mask_no_0(new (big_int[word_size])),
+      v(new (big_int[word_size])),
+      m_idx(new (int[word_size])),
+      ibit(new (int[k])) {
   mem = 0;
   r = 0;
-  
-  try{
+
+  try {
     sqrt_element_size = sqrt(element_size);
     if (sqrt_element_size * sqrt_element_size != element_size) {
-      throw (string("element_size is not a square"));
+      throw(string("element_size is not a square"));
     }
-    if(k * k * k * k * k > element_size) {
-      cout << k << " " << k*k*k*k*k << " " << element_size << endl;
-      throw (string("element_size is too small for the fusion tree capacity"));
+    if (k * k * k * k * k > element_size) {
+      cout << k << " " << k * k * k * k * k << " " << element_size << endl;
+      throw(string("element_size is too small for the fusion tree capacity"));
     }
-    
-    if(k * k * k * k * k + k * k * k * k > word_size) {
-      throw (string("word_size is too small for the fusion tree capacity"));
+
+    if (k * k * k * k * k + k * k * k * k > word_size) {
+      throw(string("word_size is too small for the fusion tree capacity"));
     }
   } catch (const string msg) {
     cerr << msg << endl;
@@ -350,6 +363,15 @@ fusiontree::fusiontree(vector<big_int> &v_, int k_, int word_size_, int element_
   find_m();
 
   set_parallel_comparison();
+}
+
+fusiontree::~fusiontree() {
+  delete[] t_mask_1;
+  delete[] t_mask_no_1;
+  delete[] t_mask_no_0;
+  delete[] v;
+  delete[] m_idx;
+  delete[] ibit;
 }
 
 // prints all the numbers, in binary form, in a fusion tree

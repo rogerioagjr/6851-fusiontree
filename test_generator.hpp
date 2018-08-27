@@ -206,7 +206,7 @@ int public_test() {
       }
     }
 
-    fusiontree ft = fusiontree(v);
+    fusiontree ft(v);
 
     cout << "Finished Fusion Tree Construction" << endl << endl;
 

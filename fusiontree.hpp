@@ -9,7 +9,7 @@
 #define fusiontree_hpp
 
 #include <stdio.h>
-
+#include <memory>
 #include <vector>
 
 #include "big_int.hpp"
@@ -18,33 +18,34 @@ using namespace std;
 
 class fusiontree {
  private:
-
   int word_size;     // Size of the type being used as big int, in bits
   int element_size;  // Size of the element of the fusion_tree, must be a square
-  int sqrt_element_size;        // Value of sqrt(element_size), necessary for most significant bit
-  int capacity; // maximum number of integers in a fusion tree
+  int sqrt_element_size;  // Value of sqrt(element_size), necessary for most
+                          // significant bit
+  int capacity;           // maximum number of integers in a fusion tree
 
   // bitmasks precaulculated to avoid use of <<
-  big_int t_mask_1[WSIZE], t_mask_no_1[WSIZE], t_mask_no_0[WSIZE], F, M, SK,
-      K_POT, SK_F, SK_MULT;
+  big_int *t_mask_1, *t_mask_no_1, *t_mask_no_0;
+
+  big_int F, M, SK, K_POT, SK_F, SK_MULT;
 
   int k;        // maximum number of integers in a fusion tree
   big_int mem;  // sketched integers
 
-  big_int v[K];  // real integers
-  int sz;        // size of tree
+  big_int *v;  // real integers
+  int sz;      // size of tree
 
   big_int k_mult;    // integer used by parallel comparison
   big_int diff_and;  // bitmask used in parallel comparison
   big_int pos_and;   // bitmask used in last step of parallel comparison
 
   big_int m;            // integer m
-  int m_idx[K];         // array with the m_i indexes
+  int *m_idx;           // array with the m_i indexes
   big_int sketch_mask;  // mask of all the m_i+b_i sums
 
-  int r;        // number of important bits
-  big_int b;    // mask of important bits
-  int ibit[K];  // indexes of the important bits
+  int r;      // number of important bits
+  big_int b;  // mask of important bits
+  int *ibit;  // indexes of the important bits
 
   // calculates the basic bitmasks used in bit tricks
   void bit_operations_initialize();
@@ -100,9 +101,13 @@ class fusiontree {
   // or -1 if there is no such k
   const int find_predecessor(const big_int &x) const;
 
+  // fusiontree constructor
   // v_ is a vector with the integers to be stored
-  fusiontree(vector<big_int> &v_, int k_=5, int word_size_ = 4000,
+  fusiontree(vector<big_int> &v_, int k_ = 5, int word_size_ = 4000,
              int element_size_ = 3136);
+
+  // fusiontree destructor
+  ~fusiontree();
 };
 
 // prints all the numbers, in binary form, in a fusion tree
