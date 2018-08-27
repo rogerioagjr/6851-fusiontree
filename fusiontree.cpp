@@ -177,7 +177,7 @@ void fusiontree::find_m() {
 
   // set sketch_mask
   for (int i = 0; i < r; i++) {
-    m_idx[i] = m_idx[i] + (r3 * ((w - ibit[i] + i * r3) / r3));
+    m_idx[i] = m_idx[i] + (r3 * ((element_size - ibit[i] + i * r3) / r3));
 
     m = m | mask_1(m_idx[i]);
 
@@ -217,7 +217,7 @@ const big_int fusiontree::approximate_sketch(const big_int &x) const {
   return ret;
 }
 
-// returns an integer with O(w^(1/5)) sketches of x, separated by zeroes
+// returns an integer with O(element_size^(1/5)) sketches of x, separated by zeroes
 const big_int fusiontree::sketch_k(const big_int &x) const {
   big_int ret = approximate_sketch(x) * k_mult;
   return ret;
@@ -250,6 +250,9 @@ const int fusiontree::find_sketch_predecessor(const big_int &x) const {
 
 // returns the number of integers stored
 const int fusiontree::size() const { return sz; }
+
+// returns the size of the elements in the fusion tree
+const int fusiontree::element_size_val() const { return element_size; }
 
 // returns the number in a given position in the tree
 const big_int fusiontree::pos(int i) const { return v[i]; }
@@ -315,11 +318,28 @@ const int fusiontree::find_predecessor(const big_int &x) const {
 }
 
 // v_ is a vector with the integers to be stored
-fusiontree::fusiontree(vector<big_int> &v_) {
-  q = k = K;
+fusiontree::fusiontree(vector<big_int> &v_, int k_, int word_size_, int element_size_) {
+  
+  k = k_, word_size = word_size_, element_size = element_size_;
   mem = 0;
   r = 0;
-  w = WVAR;
+  
+  try{
+    sqrt_element_size = sqrt(element_size);
+    if (sqrt_element_size * sqrt_element_size != element_size) {
+      throw (string("element_size is not a square"));
+    }
+    if(k * k * k * k * k > element_size) {
+      cout << k << " " << k*k*k*k*k << " " << element_size << endl;
+      throw (string("element_size is too small for the fusion tree capacity"));
+    }
+    
+    if(k * k * k * k * k + k * k * k * k > word_size) {
+      throw (string("word_size is too small for the fusion tree capacity"));
+    }
+  } catch (const string msg) {
+    cerr << msg << endl;
+  }
 
   bit_operations_initialize();
 

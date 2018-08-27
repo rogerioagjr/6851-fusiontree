@@ -19,12 +19,11 @@ using namespace std;
 
 class fusiontree {
  private:
-  /*// environment constants
-  int WSIZE; 6300  // Size the big_int must have - O(max(K^5+K^4,w+sqrt(w))
-  int WVAR; 3136  // Value of w, the maximum number of bits of an element of a
-  fusion tree int SQRTW; 56     // Value of sqrt(w), necessary for most
-  significant bit int K; 5          // Maximum size of a fusion tree -
-  O(WVAR^(1/5))*/
+
+  int word_size;     // Size of the type being used as big int, in bits
+  int element_size;  // Size of the element of the fusion_tree, must be a square
+  int sqrt_element_size;        // Value of sqrt(element_size), necessary for most significant bit
+  int capacity; // maximum number of integers in a fusion tree
 
   // bitmasks precaulculated to avoid use of <<
   big_int t_mask_1[WSIZE], t_mask_no_1[WSIZE], t_mask_no_0[WSIZE], F, M, SK,
@@ -32,7 +31,6 @@ class fusiontree {
 
   int k;        // maximum number of integers in a fusion tree
   big_int mem;  // sketched integers
-  int q;        // word size
 
   big_int v[K];  // real integers
   int sz;        // size of tree
@@ -48,8 +46,6 @@ class fusiontree {
   int r;        // number of important bits
   big_int b;    // mask of important bits
   int ibit[K];  // indexes of the important bits
-
-  int w;  // word size
 
   // calculates the basic bitmasks used in bit tricks
   void bit_operations_initialize();
@@ -95,6 +91,9 @@ class fusiontree {
   // returns the number of integers stored
   const int size() const;
 
+  // returns the size of the elements in the fusion tree
+  const int element_size_val() const;
+
   // returns the number in a given position in the tree
   const big_int pos(int i) const;
 
@@ -103,7 +102,8 @@ class fusiontree {
   const int find_predecessor(const big_int &x) const;
 
   // v_ is a vector with the integers to be stored
-  fusiontree(vector<big_int> &v_);
+  fusiontree(vector<big_int> &v_, int k_=5, int word_size_ = 4000,
+             int element_size_ = 3136);
 };
 
 // prints all the numbers, in binary form, in a fusion tree
