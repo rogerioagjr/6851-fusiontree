@@ -17,40 +17,40 @@ using namespace std;
 // initializes the tricks of the library
 void fusiontree::bit_operations_initialize() {
   // calculates the basic bitmasks used in bit tricks
-  for (int i = 0; i < WSIZE; i++) {
+  for (int i = 0; i < word_size; i++) {
     t_mask_1[i] = (big_int(1) << i);
     t_mask_no_1[i] = (~big_int(1) << i);
     t_mask_no_0[i] = (~big_int(0) << i);
   }
 
   // Find the value of F
-  for (int i = 0; i < SQRTW; i++) {
-    F = F | (t_mask_1[SQRTW - 1 + i * SQRTW]);
+  for (int i = 0; i < sqrt_element_size; i++) {
+    F = F | (t_mask_1[sqrt_element_size - 1 + i * sqrt_element_size]);
   }
 
   // Find the value of M
-  for (int i = 0; i < SQRTW; i++) {
-    M = M | (t_mask_1[WVAR - (SQRTW - 1) - i * SQRTW + i]);
+  for (int i = 0; i < sqrt_element_size; i++) {
+    M = M | (t_mask_1[element_size - (sqrt_element_size - 1) - i * sqrt_element_size + i]);
   }
 
   // Find the value of SK_F
-  for (int i = 0; i < SQRTW; i++) {
-    SK_F = SK_F | (t_mask_1[SQRTW + i * (SQRTW + 1)]);
+  for (int i = 0; i < sqrt_element_size; i++) {
+    SK_F = SK_F | (t_mask_1[sqrt_element_size + i * (sqrt_element_size + 1)]);
   }
 
   // Find the value of SK
-  for (int i = 0; i < SQRTW; i++) {
-    SK = SK | (t_mask_1[i * (SQRTW + 1)]);
+  for (int i = 0; i < sqrt_element_size; i++) {
+    SK = SK | (t_mask_1[i * (sqrt_element_size + 1)]);
   }
 
   // Find the value of K_POT
-  for (int i = 0; i < SQRTW; i++) {
-    K_POT = K_POT | (t_mask_1[SQRTW - i - 1 + i * (SQRTW + 1)]);
+  for (int i = 0; i < sqrt_element_size; i++) {
+    K_POT = K_POT | (t_mask_1[sqrt_element_size - i - 1 + i * (sqrt_element_size + 1)]);
   }
 
   // Find the value of SK_MULT
-  for (int i = 0; i < SQRTW; i++) {
-    SK_MULT = SK_MULT | (t_mask_1[i * (SQRTW + 1)]);
+  for (int i = 0; i < sqrt_element_size; i++) {
+    SK_MULT = SK_MULT | (t_mask_1[i * (sqrt_element_size + 1)]);
   }
 }
 
@@ -75,9 +75,9 @@ const int fusiontree::sqrtw_first_bit(big_int x) const {
 
   x = x * SK_MULT;
 
-  x = x >> ((SQRTW * SQRTW) + (SQRTW - 1));
+  x = x >> ((element_size) + (sqrt_element_size - 1));
 
-  x = x & (~mask_no_0(SQRTW + 1));
+  x = x & (~mask_no_0(sqrt_element_size + 1));
 
   return x.to_int() - 1;
 }
@@ -95,14 +95,14 @@ const int fusiontree::fast_most_significant_bit(big_int const &x) const {
 
   big_int x_clusters = x_remain | x_first_bits;
 
-  x_clusters = ((x_clusters * M) >> WVAR) & (~mask_no_0(SQRTW));
+  x_clusters = ((x_clusters * M) >> element_size) & (~mask_no_0(sqrt_element_size));
 
   int right_cluster_idx = sqrtw_first_bit(x_clusters);
 
   big_int right_cluster =
-      (x >> (right_cluster_idx * SQRTW)) & (~mask_no_0(SQRTW));
+      (x >> (right_cluster_idx * sqrt_element_size)) & (~mask_no_0(sqrt_element_size));
 
-  int ans = right_cluster_idx * SQRTW + sqrtw_first_bit(right_cluster);
+  int ans = right_cluster_idx * sqrt_element_size + sqrtw_first_bit(right_cluster);
 
   if (ans < 0) {
     ans = -1;
@@ -142,7 +142,7 @@ void fusiontree::find_important_bits() {
     b = b | mask_1(diff_point);
   }
 
-  for (int i = 0; i < WSIZE; i++) {
+  for (int i = 0; i < word_size; i++) {
     if ((b & mask_1(i)) != 0) {
       ibit[r] = i;
       r++;

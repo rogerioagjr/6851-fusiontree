@@ -11,12 +11,10 @@
 #include <stdio.h>
 
 #include <bitset>
-#include "constants.hpp"
 
-/*#define PSIZE 6300   // Number of bits printed in cout << big_int
+#define PSIZE 4000   // Number of bits printed in cout << big_int
 #define PINTERV 100  // Number of bits in printing intervals
-#define WSIZE 6300  // Size the big_int must have - O(max(K^5+K^4,w+sqrt(w))
-#define BIGARRAYSIZE 100  // ceil(WSIZE / 64) (must be multiple of 4)*/
+#define WSIZE 4000  // Size the big_int must have - O(max(K^5+K^4,w+sqrt(w))
 
 using namespace std;
 

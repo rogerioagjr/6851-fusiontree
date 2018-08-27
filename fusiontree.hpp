@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "big_int.hpp"
-#include "constants.hpp"
 
 using namespace std;
 
