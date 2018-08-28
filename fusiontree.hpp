@@ -52,11 +52,11 @@ class fusiontree {
                       // fusiontree
   int sz;             // size of tree
 
-  big_int repeat_int;               // integer used by parallel comparison
-                                    // repeats a number multiple times
-  big_int extract_interposed_bits;  // bitmask used to extract the bits
-                                    // interposed among the repetitions of a
-                                    // number
+  big_int repeat_int;                   // integer used by parallel comparison
+                                        // repeats a number multiple times
+  big_int extract_interposed_bits;      // bitmask used to extract the bits
+                                        // interposed among the repetitions of a
+                                        // number
   big_int extract_interposed_bits_sum;  // bitmask used to extract the sum of
                                         // bits interposed among the repetitions
                                         // of a number, after having gathering
@@ -87,10 +87,10 @@ class fusiontree {
   const big_int approximate_sketch(const big_int &x) const;
 
   // returns an integer with O(w^(1/5)) sketches of x, separated by zeroes
-  const big_int sketch_k(const big_int &x) const;
+  const big_int multiple_sketches(const big_int &x) const;
 
-  // returns the index of the biggest k in the tree succh that
-  // sketch(k)<=sketch(x)
+  // returns the index of the biggest y in the tree succh that
+  // sketch(y)<=sketch(x)
   const int find_sketch_predecessor(const big_int &x) const;
 
  public:

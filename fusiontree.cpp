@@ -276,33 +276,50 @@ void fusiontree::find_m() {
   }
 }
 
-// sets the variable data that will keep the sketched numbers
+// sets the variable data that will keep the sketched numbers, as well as the
+// bit masks which are necessary for the parallel comparison
 void fusiontree::set_parallel_comparison() {
+  // precalculates important_bits_count^4
   int important_bits_count_to_4 = important_bits_count * important_bits_count *
                                   important_bits_count * important_bits_count;
 
-  // set data
+  // set variable data
+  // for each element in the fusiontree, add their sketch to data
   for (int i = 0; i < my_env->capacity; i++) {
+    // add the interposed bit right before the element sketch to be inserted
     data = data | my_env->shift_1[(i + 1) * important_bits_count_to_4 + i];
+    // then add the element that is in position capacity - 1 - i (to be in
+    // decreasing order), in its right place
     data = data | (approximate_sketch(pos(my_env->capacity - 1 - i))
                    << i * (important_bits_count_to_4 + 1));
   }
 
-  // set repeat_int
+  // set bitmask repeat_int, which is a repetition of 000...01, to make a
+  // sequnce if bits repeat itself multiple times, leaving one bit interposed
+  // between two repetitions
   for (int i = 0; i < my_env->capacity; i++) {
+    // just add 1 in the end of each interval of 000...01
     repeat_int =
         repeat_int | my_env->shift_1[i * (important_bits_count_to_4 + 1)];
   }
 
-  // set extract_interposed_bits
+  // set extract_interposed_bits, which is a bitmask with the positions of the
+  // bits interposed among the repetions of a sequence of bits made with
+  // repeat_int
   for (int i = 0; i < my_env->capacity; i++) {
+    // just add 1 between in the positions between the repetitions of each
+    // interval
     extract_interposed_bits =
         extract_interposed_bits |
         my_env->shift_1[(i + 1) * important_bits_count_to_4 + i];
   }
 
-  // set extract_interposed_bits_sum
+  // set extract_interposed_bits_sum, which is a bitmask for the first
+  // important_bits_count^4 bits of a number. After multiplying extracting the
+  // interposed bits, multiplying again by repeat_int, and shifting the number
+  // enough to the right, all interposed bits add up here
   for (int i = 0; i < important_bits_count_to_4; i++) {
+    // just add 1 for each of the first important_bits_count^4 bits
     extract_interposed_bits_sum =
         extract_interposed_bits_sum | my_env->shift_1[i];
   }
@@ -310,42 +327,60 @@ void fusiontree::set_parallel_comparison() {
 
 // returns the approximate sketch, in the fusion tree, of a given number
 const big_int fusiontree::approximate_sketch(const big_int &x) const {
+  // extract the important bits of the number, multiply them by m and shift to
+  // the right b_i+m_i positions so that the last significant bit go to position
+  // 0
   big_int ret = ((((x & mask_important_bits) * m) & sketch_mask) >>
                  (important_bits[0] + m_indices[0]));
+  // then return the result of these operations
   return ret;
 }
 
-// returns an integer with O(element_size^(1/5)) sketches of x, separated by
-// zeroes
-const big_int fusiontree::sketch_k(const big_int &x) const {
+// returns an integer with capacity repetitions of the sketch of x, separated by
+// one zero between any consecutive repetitions
+const big_int fusiontree::multiple_sketches(const big_int &x) const {
+  // calculate the approximate sketch of x and multiply by the variable
+  // repeat_int
   big_int ret = approximate_sketch(x) * repeat_int;
+  // then return the result of these operations
   return ret;
 }
 
-// returns the index of the biggest k in the tree succh that
-// sketch(k)<=sketch(x)
+// returns the index of the biggest y in the tree such that
+// sketch(y)<=sketch(x), using parallel comparison
 const int fusiontree::find_sketch_predecessor(const big_int &x) const {
+  // precalculate the value of important_bits_count^4
   int important_bits_count_to_4 = important_bits_count * important_bits_count *
                                   important_bits_count * important_bits_count;
 
-  big_int diff = data - sketch_k(x);
-
+  // calculate the difference between data and multiple_sketches(x)
+  // all the interposed bits before sketches greater than sketch(x) will remain
+  // significant
+  big_int diff = data - multiple_sketches(x);
+  // extract all the bits interposed among sketches of the elements in data
   diff = diff & extract_interposed_bits;
-
+  // the number of significant bits is the number of sketches greater then
+  // sketch(x) multiply the extracted bits by repeat_int to make then add up
+  // together before the first interposed bit
   diff = diff * repeat_int;
-
+  // shift the result to the right to ignore the trash created after the first
+  // interposed bit
   diff = diff >> ((my_env->capacity * important_bits_count_to_4) +
                   (my_env->capacity - 1));
-
+  // extract only the the number of bits in a sketch to ignore trash created
+  // before the interval where the extracted bits were added
   diff = diff & extract_interposed_bits_sum;
 
+  // the position of sketch(x) can be calculated using the number of sketches in
+  // the fusion tree and the number of sketches greater than sketh(x)
   int answer = size() - diff.to_int() - 1;
 
+  // check if the corner case in which the sketch is already in the fusion tree
   if (answer + 1 < size() and
       approximate_sketch(elements[answer + 1]) == approximate_sketch(x)) {
     answer++;
   }
-
+  // return the position found
   return answer;
 }
 
@@ -358,60 +393,93 @@ const big_int fusiontree::pos(int i) const { return elements[i]; }
 // returns the index of the biggest k in the tree succh that k<=x
 // or -1 if there is no such k
 const int fusiontree::find_predecessor(const big_int &x) const {
+  // first, find the position of sketch(x) among the sketches of the elements in
+  // the fusion tree keep the element right before and right after sketch(x)
   int idx1 = find_sketch_predecessor(x);
+  // indices of sketch predecessor and sucessor
   int idx2 = idx1 + 1;
 
-  int q1, q2;
+  // lowest common ancestor with predecessor and sucessor
+  // it is the same of the longest common prefix, so we can find lca(a,b) by
+  // fiding the first different bit between a and b
+  int lca1, lca2;
 
+  // if the sketch has no predecessor, tag lca1
+  // else calculate the lca between x and its predecessor and keep in lca1
   if (idx1 < 0) {
-    q1 = -2;
+    lca1 = -2;
   } else {
-    q1 = my_env->fast_first_diff(elements[idx1], x);
+    lca1 = my_env->fast_first_diff(elements[idx1], x);
   }
 
+  // if the sketch has no sucessor, tag lca2
+  // else calculate the lca between x and its sucessore and keep in lca1
   if (idx2 < size()) {
-    q2 = my_env->fast_first_diff(elements[idx2], x);
+    lca2 = my_env->fast_first_diff(elements[idx2], x);
   } else {
-    q2 = -2;
+    lca2 = -2;
   }
 
-  if (q1 == -1) {
+  // if lca1 is negative, then the number is the same as its predecessor
+  // return idx1
+  if (lca1 == -1) {
     return idx1;
   }
-  if (q2 == -1) {
+  // if lca2 is negative, then the number is the same as its sucessor
+  // return idx2
+  if (lca2 == -1) {
     return idx2;
   }
+  int lca;
+
+  // if lca1 is tagged, there is no predecessor, then use lca2, the lca with the
+  // sucessor
+  if (lca1 == -2) lca = lca2;
+  // if lca2 is tagged, there is no sucecessor, then use lca1, the lca with the
+  // predessor
+  if (lca2 == -2) lca = lca1;
+  // if both lca1 and lc2 are tagged, pick the highest lca
+  if (lca1 != -2 and lca2 != -2) lca = min(lca1, lca2);
 
   int answer = 0;
+  big_int e;
 
-  big_int y;
-
-  int q;
-
-  if (q1 == -2) q = q2;
-  if (q2 == -2) q = q1;
-  if (q1 != -2 and q2 != -2) q = min(q1, q2);
-
-  // if diff bit is 1
-  if ((x & my_env->shift_1[q]) != 0) {
-    y = x & my_env->shift_neg_1[q];
-    y = y | (my_env->shift_1[q] - 1);
-
-    answer = find_sketch_predecessor(y);
+  // if the bit that first differentiates x is 1, then x lies in the right
+  // subtree of the lca therefore, this subtree is empty and the predecessor of
+  // x is the greatest number in the left subtree. Since the sketches keep the
+  // elements order, it is the element with the righmost sketch in that subtree.
+  // If p is the path to the lca, we just need to find the sketch predecessor of
+  // e = p0111...11
+  if ((x & my_env->shift_1[lca]) != 0) {
+    // first, add p0 to e, extracting the bits in p from x and adding 0
+    e = x & my_env->shift_neg_1[lca];
+    // than add a bunch of 1s
+    e = e | (my_env->shift_1[lca] - 1);
+    // the answer will be the sketch predecessor of e
+    answer = find_sketch_predecessor(e);
   }
 
-  // if diff bit is 0
+  // if the bit that first differentiates x is 0, then x lies in the left
+  // subtree of the lca therefore, this subtree is empty and the sucessor of x
+  // is the smallest number in the right subtree. Since the sketches keep the
+  // elements order, it is the element with the leftmost sketch in that subtree.
+  // If p is the path to the lca, we just need to find the sketch predecessor of
+  // e = p1000...00
   else {
-    y = x | my_env->shift_1[q];
-    y = y & my_env->shift_neg_0[q];
-
-    answer = find_sketch_predecessor(y);
-
+    // first, add p1 to e, extracting the bits in p from x and adding 1
+    e = x | my_env->shift_1[lca];
+    // than add a bunch of 0s
+    e = e & my_env->shift_neg_0[lca];
+    // the answer will return either the sucessor of x or nothing
+    answer = find_sketch_predecessor(e);
+    // if it returns the sucessor, just pick the predecessor of the sucessor
+    // which is easy because of array elements
     if (answer >= 0 and elements[answer] > x) {
       answer--;
     }
   }
 
+  // return the answer
   return answer;
 }
 
@@ -452,7 +520,10 @@ fusiontree::fusiontree(vector<big_int> &elements_, environment *my_env_) {
   set_parallel_comparison();
 }
 
+// fusiontree destructor
+// It just needs to free the dynamically allocated arrays in the class
 fusiontree::~fusiontree() {
+  // use delete [] to free an array
   delete[] elements;
   delete[] m_indices;
   delete[] important_bits;
