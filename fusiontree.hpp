@@ -46,25 +46,33 @@ class fusiontree {
  private:
   environment *my_env;  // objecrt with the specifications of the fusion tree
 
-  big_int mem;  // sketched integers
+  big_int data;  // sketched integers
 
-  big_int *v;  // real integers
-  int sz;      // size of tree
+  big_int *elements;  // array with the original values of the elements of the
+                      // fusiontree
+  int sz;             // size of tree
 
-  big_int k_mult;    // integer used by parallel comparison
-  big_int diff_and;  // bitmask used in parallel comparison
-  big_int pos_and;   // bitmask used in last step of parallel comparison
+  big_int repeat_int;               // integer used by parallel comparison
+                                    // repeats a number multiple times
+  big_int extract_interposed_bits;  // bitmask used to extract the bits
+                                    // interposed among the repetitions of a
+                                    // number
+  big_int extract_interposed_bits_sum;  // bitmask used to extract the sum of
+                                        // bits interposed among the repetitions
+                                        // of a number, after having gathering
+                                        // them together
 
   big_int m;            // integer m
-  int *m_indices;       // array with the m_i indices
+  int *m_indices;       // array to keep the position of the set bits of m
   big_int sketch_mask;  // mask of all the m_i+b_i sums
 
-  int r;                // number of important bits
-  big_int b;            // mask of important bits
-  int *important_bits;  // indexes of the important bits
+  int important_bits_count;     // number of important bits
+  big_int mask_important_bits;  // mask of important bits
+  int *important_bits;  // indexes of the important bits of the elements in the
+                        // fusion tree
 
-  // add numbers from a vector to array v
-  void add_in_array(vector<big_int> &v_);
+  // add numbers from a vector to array elements
+  void add_in_array(vector<big_int> &elements_);
 
   // finds the important bits of a set of integers
   void find_important_bits();
@@ -105,6 +113,6 @@ class fusiontree {
 };
 
 // prints all the numbers, in binary form, in a fusion tree
-ostream &operator<<(ostream &out, const fusiontree &t);
+std::ostream &operator<<(std::ostream &out, const fusiontree &t);
 
 #endif /* fusiontree_hpp */
