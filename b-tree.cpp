@@ -22,7 +22,11 @@ void b_node::print_node() const {
   cout << endl << endl;
 }
 
-b_node::b_node(vector<big_int> &keys) {
+b_node::b_node(vector<big_int> &keys, environment &env, int K_) {
+  K = K_;
+
+  children = new b_node *[K + 1];
+
   int num_keys = keys.size();
   vector<big_int> parent_keys;
 
@@ -53,7 +57,7 @@ b_node::b_node(vector<big_int> &keys) {
         vector<big_int> subtree_keys =
             vector<big_int>(keys.begin() + cur_key_index,
                             keys.begin() + cur_key_index + num_keys_subtree);
-        children[cur_child_index] = new b_node(subtree_keys);
+        children[cur_child_index] = new b_node(subtree_keys, env, K);
         cur_key_index += num_keys_subtree;
       } else {
         children[cur_child_index] = NULL;
@@ -72,14 +76,16 @@ b_node::b_node(vector<big_int> &keys) {
     }
   }
 
-  key_tree = new fusiontree(parent_keys);
+  key_tree = new fusiontree(parent_keys, &env);
 
   print_node();
 }
 
-b_tree::b_tree(vector<big_int> &keys) {
+b_node::~b_node() { delete[] children; }
+
+b_tree::b_tree(vector<big_int> &keys, environment &env, int K_) {
   sort(keys.begin(), keys.end());
-  root = new b_node(keys);
+  root = new b_node(keys, env, K_);
 }
 
 const big_int b_node::get_predecessor(const big_int &x) const {

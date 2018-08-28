@@ -14,7 +14,6 @@
 #include <ctime>
 #include <iostream>
 #include "big_int.hpp"
-#include "constants.hpp"
 #include "extra.hpp"
 #include "fusiontree.hpp"
 
@@ -172,14 +171,14 @@ int find_predecessor_in_vector(big_int &x, vector<big_int> &v) {
   return 0;
 }*/
 
-int public_test() {
+int public_test(environment *env) {
   srand(1998);
 
   int n, sz, m, q;
   n = 2;
   m = 10;
-  sz = K;
-  q = WVAR;
+  sz = env->k;
+  q = env->element_size;
 
   bool error = false;
 
@@ -206,7 +205,7 @@ int public_test() {
       }
     }
 
-    fusiontree ft(v);
+    fusiontree ft(v, env);
 
     cout << "Finished Fusion Tree Construction" << endl << endl;
 

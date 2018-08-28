@@ -8,21 +8,23 @@
 
 #include <stdio.h>
 
-#include "constants.hpp"
 #include "fusiontree.hpp"
 
 class b_node {
  private:
   fusiontree *key_tree;
 
-  b_node *children[K + 1];
+  int K;
+
+  b_node **children;
 
   bool is_leaf;
 
   void print_node() const;
 
  public:
-  b_node(vector<big_int> &keys);
+  b_node(vector<big_int> &keys, environment &env, int K_);
+  ~b_node();
 
   const big_int get_predecessor(const big_int &x) const;
 };
@@ -32,7 +34,7 @@ class b_tree {
   b_node *root;
 
  public:
-  b_tree(vector<big_int> &keys);
+  b_tree(vector<big_int> &keys, environment &env, int K_);
 
   const big_int get_predecessor(const big_int &x) const;
 };

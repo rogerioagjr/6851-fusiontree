@@ -50,7 +50,8 @@ int main() {
 
   // fast_most_significant_bit(141);
 
-  public_test();
+  environment *env = new environment;
+  public_test(env);
 
   // test_big_int();
 

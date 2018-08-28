@@ -15,7 +15,28 @@
 using namespace std;
 
 // initializes the tricks of the library
-void fusiontree::bit_operations_initialize() {
+environment::environment(int word_size_, int element_size_, int k_)
+    : word_size(word_size_), element_size(element_size_), k(k_) {
+  try {
+    sqrt_element_size = sqrt(element_size);
+    if (sqrt_element_size * sqrt_element_size != element_size) {
+      throw(string("element_size is not a square"));
+    }
+    if (k * k * k * k * k > element_size) {
+      throw(string("element_size is too small for the fusion tree capacity"));
+    }
+
+    if (k * k * k * k * k + k * k * k * k > word_size) {
+      throw(string("word_size is too small for the fusion tree capacity"));
+    }
+  } catch (const string msg) {
+    cerr << msg << endl;
+  }
+
+  t_mask_1 = new (big_int[word_size]);
+  t_mask_no_1 = new (big_int[word_size]);
+  t_mask_no_0 = new (big_int[word_size]);
+
   // calculates the basic bitmasks used in bit tricks
   for (int i = 0; i < word_size; i++) {
     t_mask_1[i] = (big_int(1) << i);
@@ -56,18 +77,23 @@ void fusiontree::bit_operations_initialize() {
   }
 }
 
-const big_int fusiontree::mask_1(const int &x) const { return t_mask_1[x]; }
+environment::~environment() {
+  delete[] t_mask_1;
+  delete[] t_mask_no_1;
+  delete[] t_mask_no_0;
+}
+const big_int environment::mask_1(const int &x) const { return t_mask_1[x]; }
 
-const big_int fusiontree::mask_no_1(const int &x) const {
+const big_int environment::mask_no_1(const int &x) const {
   return t_mask_no_1[x];
 }
 
-const big_int fusiontree::mask_no_0(const int &x) const {
+const big_int environment::mask_no_0(const int &x) const {
   return t_mask_no_0[x];
 }
 
 // first step of fast_most_significant_bit
-const int fusiontree::sqrtw_first_bit(big_int x) const {
+const int environment::sqrtw_first_bit(big_int x) const {
   x = x * SK;
   x = x | SK_F;
 
@@ -85,7 +111,7 @@ const int fusiontree::sqrtw_first_bit(big_int x) const {
 }
 
 // find the most significant bit of a big_int in O(1) in word RAM model
-const int fusiontree::fast_most_significant_bit(big_int const &x) const {
+const int environment::fast_most_significant_bit(big_int const &x) const {
   big_int x_first_bits = x & F;
 
   big_int x_remain = x ^ x_first_bits;
@@ -116,8 +142,8 @@ const int fusiontree::fast_most_significant_bit(big_int const &x) const {
 }
 
 // find the longest common prefix between two big_ints in O(1) in word RAM model
-const int fusiontree::fast_first_diff(big_int const &x,
-                                      big_int const &y) const {
+const int environment::fast_first_diff(big_int const &x,
+                                       big_int const &y) const {
   return fast_most_significant_bit(x ^ y);
 }
 
@@ -127,7 +153,7 @@ void fusiontree::add_in_array(vector<big_int> &v_) {
   for (int i = 0; i < v_.size(); i++) {
     v[i] = v_[i];
   }
-  sort(v, v + size());
+  std::sort(v, v + size());
 }
 
 // finds the important bits of a set of integers
@@ -135,19 +161,19 @@ void fusiontree::find_important_bits() {
   if (size() == 1) return;
 
   for (int i = 1; i < size(); i++) {
-    int diff_point = fast_first_diff(pos(i), pos(0));
+    int diff_point = my_env->fast_first_diff(pos(i), pos(0));
 
     for (int j = 1; j < i; j++) {
-      int temp = fast_first_diff(pos(i), pos(j));
+      int temp = my_env->fast_first_diff(pos(i), pos(j));
 
       if (temp < diff_point) diff_point = temp;
     }
 
-    b = b | mask_1(diff_point);
+    b = b | my_env->mask_1(diff_point);
   }
 
-  for (int i = 0; i < word_size; i++) {
-    if ((b & mask_1(i)) != 0) {
+  for (int i = 0; i < my_env->word_size; i++) {
+    if ((b & my_env->mask_1(i)) != 0) {
       ibit[r] = i;
       r++;
     }
@@ -163,13 +189,13 @@ void fusiontree::find_m() {
 
   for (int i = 0; i < r; i++) {
     for (int j = 0; j < r3; j++) {
-      if ((tag & mask_1(j)) == 0) {
+      if ((tag & my_env->mask_1(j)) == 0) {
         m_idx[i] = j;
 
         for (int k1 = 0; k1 < r; k1++) {
           for (int k2 = 0; k2 < r; k2++) {
             if ((j + ibit[k1] - ibit[k2]) >= 0) {
-              tag = tag | (mask_1(j + ibit[k1] - ibit[k2]));
+              tag = tag | (my_env->mask_1(j + ibit[k1] - ibit[k2]));
             }
           }
         }
@@ -181,11 +207,12 @@ void fusiontree::find_m() {
 
   // set sketch_mask
   for (int i = 0; i < r; i++) {
-    m_idx[i] = m_idx[i] + (r3 * ((element_size - ibit[i] + i * r3) / r3));
+    m_idx[i] =
+        m_idx[i] + (r3 * ((my_env->element_size - ibit[i] + i * r3) / r3));
 
-    m = m | mask_1(m_idx[i]);
+    m = m | my_env->mask_1(m_idx[i]);
 
-    sketch_mask = sketch_mask | (mask_1(ibit[i] + m_idx[i]));
+    sketch_mask = sketch_mask | (my_env->mask_1(ibit[i] + m_idx[i]));
   }
 }
 
@@ -194,24 +221,24 @@ void fusiontree::set_parallel_comparison() {
   int r4 = r * r * r * r;
 
   // set mem
-  for (int i = 0; i < k; i++) {
-    mem = mem | mask_1((i + 1) * r4 + i);
-    mem = mem | (approximate_sketch(pos(k - 1 - i)) << i * (r4 + 1));
+  for (int i = 0; i < my_env->k; i++) {
+    mem = mem | my_env->mask_1((i + 1) * r4 + i);
+    mem = mem | (approximate_sketch(pos(my_env->k - 1 - i)) << i * (r4 + 1));
   }
 
   // set k_mult
-  for (int i = 0; i < k; i++) {
-    k_mult = k_mult | mask_1(i * (r4 + 1));
+  for (int i = 0; i < my_env->k; i++) {
+    k_mult = k_mult | my_env->mask_1(i * (r4 + 1));
   }
 
   // set diff_and
-  for (int i = 0; i < k; i++) {
-    diff_and = diff_and | mask_1((i + 1) * r4 + i);
+  for (int i = 0; i < my_env->k; i++) {
+    diff_and = diff_and | my_env->mask_1((i + 1) * r4 + i);
   }
 
   // set pos_and
   for (int i = 0; i < r4; i++) {
-    pos_and = pos_and | mask_1(i);
+    pos_and = pos_and | my_env->mask_1(i);
   }
 }
 
@@ -239,7 +266,7 @@ const int fusiontree::find_sketch_predecessor(const big_int &x) const {
 
   diff = diff * k_mult;
 
-  diff = diff >> ((k * r4) + (k - 1));
+  diff = diff >> ((my_env->k * r4) + (my_env->k - 1));
 
   diff = diff & pos_and;
 
@@ -256,9 +283,6 @@ const int fusiontree::find_sketch_predecessor(const big_int &x) const {
 // returns the number of integers stored
 const int fusiontree::size() const { return sz; }
 
-// returns the size of the elements in the fusion tree
-const int fusiontree::element_size_val() const { return element_size; }
-
 // returns the number in a given position in the tree
 const big_int fusiontree::pos(int i) const { return v[i]; }
 
@@ -273,11 +297,11 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   if (idx1 < 0) {
     q1 = -2;
   } else {
-    q1 = fast_first_diff(v[idx1], x);
+    q1 = my_env->fast_first_diff(v[idx1], x);
   }
 
   if (idx2 < size()) {
-    q2 = fast_first_diff(v[idx2], x);
+    q2 = my_env->fast_first_diff(v[idx2], x);
   } else {
     q2 = -2;
   }
@@ -300,17 +324,17 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   if (q1 != -2 and q2 != -2) q = min(q1, q2);
 
   // if diff bit is 1
-  if ((x & mask_1(q)) != 0) {
-    y = x & mask_no_1(q);
-    y = y | (mask_1(q) - 1);
+  if ((x & my_env->mask_1(q)) != 0) {
+    y = x & my_env->mask_no_1(q);
+    y = y | (my_env->mask_1(q) - 1);
 
     answer = find_sketch_predecessor(y);
   }
 
   // if diff bit is 0
   else {
-    y = x | mask_1(q);
-    y = y & mask_no_0(q);
+    y = x | my_env->mask_1(q);
+    y = y & my_env->mask_no_0(q);
 
     answer = find_sketch_predecessor(y);
 
@@ -323,38 +347,13 @@ const int fusiontree::find_predecessor(const big_int &x) const {
 }
 
 // v_ is a vector with the integers to be stored
-fusiontree::fusiontree(vector<big_int> &v_, int k_, int word_size_,
-                       int element_size_)
-    : k(k_),
-      word_size(word_size_),
-      element_size(element_size_),
-      t_mask_1(new (big_int[word_size])),
-      t_mask_no_1(new (big_int[word_size])),
-      t_mask_no_0(new (big_int[word_size])),
-      v(new (big_int[word_size])),
-      m_idx(new (int[word_size])),
-      ibit(new (int[k])) {
+fusiontree::fusiontree(vector<big_int> &v_, environment *my_env_) {
+  my_env = my_env_;
+  v = new (big_int[my_env->word_size]);
+  m_idx = new (int[my_env->word_size]);
+  ibit = new (int[my_env->k]);
   mem = 0;
   r = 0;
-
-  try {
-    sqrt_element_size = sqrt(element_size);
-    if (sqrt_element_size * sqrt_element_size != element_size) {
-      throw(string("element_size is not a square"));
-    }
-    if (k * k * k * k * k > element_size) {
-      cout << k << " " << k * k * k * k * k << " " << element_size << endl;
-      throw(string("element_size is too small for the fusion tree capacity"));
-    }
-
-    if (k * k * k * k * k + k * k * k * k > word_size) {
-      throw(string("word_size is too small for the fusion tree capacity"));
-    }
-  } catch (const string msg) {
-    cerr << msg << endl;
-  }
-
-  bit_operations_initialize();
 
   add_in_array(v_);
 
@@ -366,9 +365,6 @@ fusiontree::fusiontree(vector<big_int> &v_, int k_, int word_size_,
 }
 
 fusiontree::~fusiontree() {
-  delete[] t_mask_1;
-  delete[] t_mask_no_1;
-  delete[] t_mask_no_0;
   delete[] v;
   delete[] m_idx;
   delete[] ibit;
