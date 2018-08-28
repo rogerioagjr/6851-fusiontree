@@ -177,7 +177,7 @@ int public_test(environment *env) {
   int n, sz, m, q;
   n = 2;
   m = 10;
-  sz = env->k;
+  sz = env->capacity;
   q = env->element_size;
 
   bool error = false;

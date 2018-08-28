@@ -15,81 +15,74 @@
 using namespace std;
 
 // initializes the tricks of the library
-environment::environment(int word_size_, int element_size_, int k_)
-    : word_size(word_size_), element_size(element_size_), k(k_) {
+environment::environment(int word_size_, int element_size_, int capacity_)
+    : word_size(word_size_), element_size(element_size_), capacity(capacity_) {
   try {
     sqrt_element_size = sqrt(element_size);
     if (sqrt_element_size * sqrt_element_size != element_size) {
       throw(string("element_size is not a square"));
     }
-    if (k * k * k * k * k > element_size) {
+    int capacity_to_4 = capacity * capacity * capacity * capacity;
+    int capacity_to_5 = capacity_to_4 * capacity;
+    if (capacity_to_5 > element_size) {
       throw(string("element_size is too small for the fusion tree capacity"));
     }
 
-    if (k * k * k * k * k + k * k * k * k > word_size) {
+    if (capacity_to_5 + capacity_to_4 > word_size) {
       throw(string("word_size is too small for the fusion tree capacity"));
     }
   } catch (const string msg) {
     cerr << msg << endl;
   }
 
-  t_mask_1 = new (big_int[word_size]);
-  t_mask_no_1 = new (big_int[word_size]);
-  t_mask_no_0 = new (big_int[word_size]);
+  shift_1 = new (big_int[word_size]);
+  shift_neg_1 = new (big_int[word_size]);
+  shift_neg_0 = new (big_int[word_size]);
 
   // calculates the basic bitmasks used in bit tricks
   for (int i = 0; i < word_size; i++) {
-    t_mask_1[i] = (big_int(1) << i);
-    t_mask_no_1[i] = (~big_int(1) << i);
-    t_mask_no_0[i] = (~big_int(0) << i);
+    shift_1[i] = (big_int(1) << i);
+    shift_neg_1[i] = (~big_int(1) << i);
+    shift_neg_0[i] = (~big_int(0) << i);
   }
 
   // Find the value of F
   for (int i = 0; i < sqrt_element_size; i++) {
-    F = F | (t_mask_1[sqrt_element_size - 1 + i * sqrt_element_size]);
+    F = F | (shift_1[sqrt_element_size - 1 + i * sqrt_element_size]);
   }
 
   // Find the value of M
   for (int i = 0; i < sqrt_element_size; i++) {
-    M = M | (t_mask_1[element_size - (sqrt_element_size - 1) -
-                      i * sqrt_element_size + i]);
+    M = M | (shift_1[element_size - (sqrt_element_size - 1) -
+                     i * sqrt_element_size + i]);
   }
 
   // Find the value of SK_F
   for (int i = 0; i < sqrt_element_size; i++) {
-    SK_F = SK_F | (t_mask_1[sqrt_element_size + i * (sqrt_element_size + 1)]);
+    SK_F = SK_F | (shift_1[sqrt_element_size + i * (sqrt_element_size + 1)]);
   }
 
   // Find the value of SK
   for (int i = 0; i < sqrt_element_size; i++) {
-    SK = SK | (t_mask_1[i * (sqrt_element_size + 1)]);
+    SK = SK | (shift_1[i * (sqrt_element_size + 1)]);
   }
 
   // Find the value of K_POT
   for (int i = 0; i < sqrt_element_size; i++) {
     K_POT = K_POT |
-            (t_mask_1[sqrt_element_size - i - 1 + i * (sqrt_element_size + 1)]);
+            (shift_1[sqrt_element_size - i - 1 + i * (sqrt_element_size + 1)]);
   }
 
   // Find the value of SK_MULT
   for (int i = 0; i < sqrt_element_size; i++) {
-    SK_MULT = SK_MULT | (t_mask_1[i * (sqrt_element_size + 1)]);
+    SK_MULT = SK_MULT | (shift_1[i * (sqrt_element_size + 1)]);
   }
 }
 
 environment::~environment() {
-  delete[] t_mask_1;
-  delete[] t_mask_no_1;
-  delete[] t_mask_no_0;
-}
-const big_int environment::mask_1(const int &x) const { return t_mask_1[x]; }
-
-const big_int environment::mask_no_1(const int &x) const {
-  return t_mask_no_1[x];
-}
-
-const big_int environment::mask_no_0(const int &x) const {
-  return t_mask_no_0[x];
+  delete[] shift_1;
+  delete[] shift_neg_1;
+  delete[] shift_neg_0;
 }
 
 // first step of fast_most_significant_bit
@@ -105,7 +98,7 @@ const int environment::sqrtw_first_bit(big_int x) const {
 
   x = x >> ((element_size) + (sqrt_element_size - 1));
 
-  x = x & (~mask_no_0(sqrt_element_size + 1));
+  x = x & (~shift_neg_0[sqrt_element_size + 1]);
 
   return x.to_int() - 1;
 }
@@ -124,12 +117,12 @@ const int environment::fast_most_significant_bit(big_int const &x) const {
   big_int x_clusters = x_remain | x_first_bits;
 
   x_clusters =
-      ((x_clusters * M) >> element_size) & (~mask_no_0(sqrt_element_size));
+      ((x_clusters * M) >> element_size) & (~shift_neg_0[sqrt_element_size]);
 
   int right_cluster_idx = sqrtw_first_bit(x_clusters);
 
   big_int right_cluster = (x >> (right_cluster_idx * sqrt_element_size)) &
-                          (~mask_no_0(sqrt_element_size));
+                          (~shift_neg_0[sqrt_element_size]);
 
   int ans =
       right_cluster_idx * sqrt_element_size + sqrtw_first_bit(right_cluster);
@@ -169,12 +162,12 @@ void fusiontree::find_important_bits() {
       if (temp < diff_point) diff_point = temp;
     }
 
-    b = b | my_env->mask_1(diff_point);
+    b = b | my_env->shift_1[diff_point];
   }
 
   for (int i = 0; i < my_env->word_size; i++) {
-    if ((b & my_env->mask_1(i)) != 0) {
-      ibit[r] = i;
+    if ((b & my_env->shift_1[i]) != 0) {
+      important_bits[r] = i;
       r++;
     }
   }
@@ -189,13 +182,14 @@ void fusiontree::find_m() {
 
   for (int i = 0; i < r; i++) {
     for (int j = 0; j < r3; j++) {
-      if ((tag & my_env->mask_1(j)) == 0) {
-        m_idx[i] = j;
+      if ((tag & my_env->shift_1[j]) == 0) {
+        m_indices[i] = j;
 
         for (int k1 = 0; k1 < r; k1++) {
           for (int k2 = 0; k2 < r; k2++) {
-            if ((j + ibit[k1] - ibit[k2]) >= 0) {
-              tag = tag | (my_env->mask_1(j + ibit[k1] - ibit[k2]));
+            if ((j + important_bits[k1] - important_bits[k2]) >= 0) {
+              tag = tag | (my_env->shift_1[j + important_bits[k1] -
+                                           important_bits[k2]]);
             }
           }
         }
@@ -207,12 +201,14 @@ void fusiontree::find_m() {
 
   // set sketch_mask
   for (int i = 0; i < r; i++) {
-    m_idx[i] =
-        m_idx[i] + (r3 * ((my_env->element_size - ibit[i] + i * r3) / r3));
+    m_indices[i] =
+        m_indices[i] +
+        (r3 * ((my_env->element_size - important_bits[i] + i * r3) / r3));
 
-    m = m | my_env->mask_1(m_idx[i]);
+    m = m | my_env->shift_1[m_indices[i]];
 
-    sketch_mask = sketch_mask | (my_env->mask_1(ibit[i] + m_idx[i]));
+    sketch_mask =
+        sketch_mask | (my_env->shift_1[important_bits[i] + m_indices[i]]);
   }
 }
 
@@ -221,30 +217,32 @@ void fusiontree::set_parallel_comparison() {
   int r4 = r * r * r * r;
 
   // set mem
-  for (int i = 0; i < my_env->k; i++) {
-    mem = mem | my_env->mask_1((i + 1) * r4 + i);
-    mem = mem | (approximate_sketch(pos(my_env->k - 1 - i)) << i * (r4 + 1));
+  for (int i = 0; i < my_env->capacity; i++) {
+    mem = mem | my_env->shift_1[(i + 1) * r4 + i];
+    mem = mem |
+          (approximate_sketch(pos(my_env->capacity - 1 - i)) << i * (r4 + 1));
   }
 
   // set k_mult
-  for (int i = 0; i < my_env->k; i++) {
-    k_mult = k_mult | my_env->mask_1(i * (r4 + 1));
+  for (int i = 0; i < my_env->capacity; i++) {
+    k_mult = k_mult | my_env->shift_1[i * (r4 + 1)];
   }
 
   // set diff_and
-  for (int i = 0; i < my_env->k; i++) {
-    diff_and = diff_and | my_env->mask_1((i + 1) * r4 + i);
+  for (int i = 0; i < my_env->capacity; i++) {
+    diff_and = diff_and | my_env->shift_1[(i + 1) * r4 + i];
   }
 
   // set pos_and
   for (int i = 0; i < r4; i++) {
-    pos_and = pos_and | my_env->mask_1(i);
+    pos_and = pos_and | my_env->shift_1[i];
   }
 }
 
 // returns the approximate sketch, in the fusion tree, of a given number
 const big_int fusiontree::approximate_sketch(const big_int &x) const {
-  big_int ret = ((((x & b) * m) & sketch_mask) >> (ibit[0] + m_idx[0]));
+  big_int ret =
+      ((((x & b) * m) & sketch_mask) >> (important_bits[0] + m_indices[0]));
   return ret;
 }
 
@@ -266,7 +264,7 @@ const int fusiontree::find_sketch_predecessor(const big_int &x) const {
 
   diff = diff * k_mult;
 
-  diff = diff >> ((my_env->k * r4) + (my_env->k - 1));
+  diff = diff >> ((my_env->capacity * r4) + (my_env->capacity - 1));
 
   diff = diff & pos_and;
 
@@ -324,17 +322,17 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   if (q1 != -2 and q2 != -2) q = min(q1, q2);
 
   // if diff bit is 1
-  if ((x & my_env->mask_1(q)) != 0) {
-    y = x & my_env->mask_no_1(q);
-    y = y | (my_env->mask_1(q) - 1);
+  if ((x & my_env->shift_1[q]) != 0) {
+    y = x & my_env->shift_neg_1[q];
+    y = y | (my_env->shift_1[q] - 1);
 
     answer = find_sketch_predecessor(y);
   }
 
   // if diff bit is 0
   else {
-    y = x | my_env->mask_1(q);
-    y = y & my_env->mask_no_0(q);
+    y = x | my_env->shift_1[q];
+    y = y & my_env->shift_neg_0[q];
 
     answer = find_sketch_predecessor(y);
 
@@ -350,8 +348,8 @@ const int fusiontree::find_predecessor(const big_int &x) const {
 fusiontree::fusiontree(vector<big_int> &v_, environment *my_env_) {
   my_env = my_env_;
   v = new (big_int[my_env->word_size]);
-  m_idx = new (int[my_env->word_size]);
-  ibit = new (int[my_env->k]);
+  m_indices = new (int[my_env->word_size]);
+  important_bits = new (int[my_env->capacity]);
   mem = 0;
   r = 0;
 
@@ -366,8 +364,8 @@ fusiontree::fusiontree(vector<big_int> &v_, environment *my_env_) {
 
 fusiontree::~fusiontree() {
   delete[] v;
-  delete[] m_idx;
-  delete[] ibit;
+  delete[] m_indices;
+  delete[] important_bits;
 }
 
 // prints all the numbers, in binary form, in a fusion tree

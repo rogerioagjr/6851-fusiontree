@@ -22,19 +22,14 @@ class environment {
   int element_size;  // Size of the element of the fusion_tree, must be a square
   int sqrt_element_size;  // Value of sqrt(element_size), necessary for most
                           // significant bit
-  int k;                  // maximum number of integers in a fusion tree
+  int capacity;           // maximum number of integers in a fusion tree
 
-  // bitmasks precaulculated to avoid use of <<
-  big_int *t_mask_1, *t_mask_no_1, *t_mask_no_0;
+  // bitmasks precalculated to avoid use of <<
+  big_int *shift_1, *shift_neg_1, *shift_neg_0;
   big_int F, M, SK, K_POT, SK_F, SK_MULT;
 
   environment(int word_size_ = 4000, int element_size_ = 3136, int k_ = 5);
   ~environment();
-
-  // access the basic bitmasks used in bit tricks
-  const big_int mask_1(const int &x) const;
-  const big_int mask_no_1(const int &x) const;
-  const big_int mask_no_0(const int &x) const;
 
   // first step of fast_most_significant_bit
   const int sqrtw_first_bit(big_int x) const;
@@ -61,12 +56,12 @@ class fusiontree {
   big_int pos_and;   // bitmask used in last step of parallel comparison
 
   big_int m;            // integer m
-  int *m_idx;           // array with the m_i indexes
+  int *m_indices;       // array with the m_i indices
   big_int sketch_mask;  // mask of all the m_i+b_i sums
 
-  int r;      // number of important bits
-  big_int b;  // mask of important bits
-  int *ibit;  // indexes of the important bits
+  int r;                // number of important bits
+  big_int b;            // mask of important bits
+  int *important_bits;  // indexes of the important bits
 
   // add numbers from a vector to array v
   void add_in_array(vector<big_int> &v_);
