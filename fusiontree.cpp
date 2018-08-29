@@ -100,7 +100,8 @@ environment::~environment() {
 // sqrt_element_size. It basically uses parallel comparison to determine
 // the greatest power of two that is not greater than the cluster
 const int environment::cluster_most_significant_bit(big_int x) const {
-  // creates sqrt repetitions of cluster x, with one bit between consecutive repetiitions
+  // creates sqrt repetitions of cluster x, with one bit between consecutive
+  // repetiitions
   x = x * repeat_int;
   // set the bits between repetitions
   x = x | interposed_bits;

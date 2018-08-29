@@ -28,8 +28,14 @@ class environment {
   big_int *shift_1, *shift_neg_1, *shift_neg_0;
   // integers used by fast_most_significant_bit
   big_int clusters_first_bits, perfect_sketch_m;
-  // integers used by sqrt_first_bit
-  big_int repeat_int, powers_of_two, interposed_bits;
+  // integers used in parallel comparison by cluster_most_significant_bit
+  big_int repeat_int;       // integer used by parallel comparison
+                            // to repeat a number multiple times
+  big_int powers_of_two;    // bitmask with the powers of two
+                            // in ascending order
+  big_int interposed_bits;  // bitmask used to extract the bits
+                            // interposed among the repetitions of a
+                            // number
 
   environment(int word_size_ = 4000, int element_size_ = 3136, int k_ = 5);
   ~environment();
