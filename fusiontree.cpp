@@ -12,9 +12,11 @@
 
 #include <iostream>
 
-// initializes the tricks of the library
+// environment constructor
+// also initializes the tricks of the environment
 environment::environment(int word_size_, int element_size_, int capacity_)
     : word_size(word_size_), element_size(element_size_), capacity(capacity_) {
+  // check if restrictions were not violated, and raise error otherwise
   try {
     sqrt_element_size = sqrt(element_size);
     if (sqrt_element_size * sqrt_element_size != element_size) {
@@ -33,6 +35,7 @@ environment::environment(int word_size_, int element_size_, int capacity_)
     cerr << msg << endl;
   }
 
+  // initializes the basic bitmasks used in bit tricks
   shift_1 = new (big_int[word_size]);
   shift_neg_1 = new (big_int[word_size]);
   shift_neg_0 = new (big_int[word_size]);
@@ -44,98 +47,159 @@ environment::environment(int word_size_, int element_size_, int capacity_)
     shift_neg_0[i] = (~big_int(0) << i);
   }
 
-  // Find the value of F
+  // Find the value of clusters_first_bits
   for (int i = 0; i < sqrt_element_size; i++) {
-    F = F | (shift_1[sqrt_element_size - 1 + i * sqrt_element_size]);
+    // for each cluster of bits of size sqrt_element_size
+    // add the first bit of the cluster in the bitmask clusters_first_bits
+    clusters_first_bits =
+        clusters_first_bits |
+        (shift_1[sqrt_element_size - 1 + i * sqrt_element_size]);
   }
 
-  // Find the value of M
+  // Find the value of perfect_sketch_m, which we use to sketch the first bits
+  // of the clusters of size sqrt_element_size. Note that the important bits are
+  // such that. We will use m_i = element_size - (sqrt_element_size - 1) - i *
+  // sqrt_element_size + i.
   for (int i = 0; i < sqrt_element_size; i++) {
-    M = M | (shift_1[element_size - (sqrt_element_size - 1) -
-                     i * sqrt_element_size + i]);
+    // for each b_i, just apply the formula
+    perfect_sketch_m =
+        perfect_sketch_m | (shift_1[element_size - (sqrt_element_size - 1) -
+                                    i * sqrt_element_size + i]);
   }
 
-  // Find the value of SK_F
+  // Find the value of interposed_bits
   for (int i = 0; i < sqrt_element_size; i++) {
-    SK_F = SK_F | (shift_1[sqrt_element_size + i * (sqrt_element_size + 1)]);
+    interposed_bits =
+        interposed_bits |
+        (shift_1[sqrt_element_size + i * (sqrt_element_size + 1)]);
   }
 
-  // Find the value of SK
+  // Find the value of repeat_int
   for (int i = 0; i < sqrt_element_size; i++) {
-    SK = SK | (shift_1[i * (sqrt_element_size + 1)]);
+    repeat_int = repeat_int | (shift_1[i * (sqrt_element_size + 1)]);
   }
 
-  // Find the value of K_POT
+  // Find the value of powers_of_two
   for (int i = 0; i < sqrt_element_size; i++) {
-    K_POT = K_POT |
-            (shift_1[sqrt_element_size - i - 1 + i * (sqrt_element_size + 1)]);
-  }
-
-  // Find the value of SK_MULT
-  for (int i = 0; i < sqrt_element_size; i++) {
-    SK_MULT = SK_MULT | (shift_1[i * (sqrt_element_size + 1)]);
+    powers_of_two =
+        powers_of_two |
+        (shift_1[sqrt_element_size - i - 1 + i * (sqrt_element_size + 1)]);
   }
 }
 
 // environment deconstructor
+// It just needs to free the dynamically allocated arrays in the class
 environment::~environment() {
+  // use free to delete an array
   delete[] shift_1;
   delete[] shift_neg_1;
   delete[] shift_neg_0;
 }
 
-// first step of fast_most_significant_bit
-const int environment::sqrtw_first_bit(big_int x) const {
-  x = x * SK;
-  x = x | SK_F;
-
-  x = x - K_POT;
-
-  x = x & SK_F;
-
-  x = x * SK_MULT;
-
+// returns the most significant bit of a cluster of bits of size
+// sqrt_element_size. It basically uses parallel comparison to determine
+// the greatest power of two that is not greater than the cluster
+const int environment::cluster_most_significant_bit(big_int x) const {
+  // creates sqrt repetitions of cluster x, with one bit between consecutive repetiitions
+  x = x * repeat_int;
+  // set the bits between repetitions
+  x = x | interposed_bits;
+  // calculate the difference between x and powers_of_two
+  // The interposed bit before repetition i will remain significant if
+  // 2^i is smaller than or equal to x
+  x = x - powers_of_two;
+  // extract all the bits interposed among the repetitions of x
+  x = x & interposed_bits;
+  // the number of significant bits is the number of powers smaller then
+  // x. Multiply the extracted bits by repeat_int to make then add up
+  // together before the first interposed bit
+  x = x * repeat_int;
+  // shift the result to the right to ignore the trash created after the first
+  // interposed bit
   x = x >> ((element_size) + (sqrt_element_size - 1));
-
+  // extract only the the number of bits in a cluster to ignore trash created
+  // before the interval where the extracted bits were added
   x = x & (~shift_neg_0[sqrt_element_size + 1]);
-
-  return x.to_int() - 1;
+  // the number of powers of two which are not greater than x, subtracted by 1,
+  // is the greatest power of two which is not greater than x, i.e., the index
+  // of the most significant bit of the cluster
+  return (int)x - 1;
 }
 
 // find the most significant bit of a big_int in O(1) in word RAM model
 const int environment::fast_most_significant_bit(big_int const &x) const {
-  big_int x_first_bits = x & F;
+  // We will divide our number x of size element_size in sqrt_element_size
+  // clusters of bits of size sqrt_element_size.
+  // Extract the first bit of each cluster
+  big_int x_clusters_first_bits = x & clusters_first_bits;
 
-  big_int x_remain = x ^ x_first_bits;
+  // use XOR between x and the last result to make the first bit of each cluster
+  // unsignificant, i.e., consider only the rest of the cluster
+  big_int x_remain = x ^ x_clusters_first_bits;
 
-  x_remain = F - x_remain;
+  // subtratct the remains of the clusters from clusters_first_bits and only the
+  // clusters with significant bits in their remais will have a zero as their
+  // first bit
+  x_remain = clusters_first_bits - x_remain;
 
-  x_remain = x_remain & F;
-  x_remain = x_remain ^ F;
+  // extract only those first bits
+  x_remain = x_remain & clusters_first_bits;
 
-  big_int x_clusters = x_remain | x_first_bits;
+  // and use an XOR with cluster_first_bits to reverse the value of the first
+  // bits now the first bit is 1 if there is any significant bit in the rest of
+  // the cluster
+  x_remain = x_remain ^ clusters_first_bits;
 
-  x_clusters =
-      ((x_clusters * M) >> element_size) & (~shift_neg_0[sqrt_element_size]);
+  // then, an OR operator between the first bits of the clusters and x_remain
+  // will result in an integer in which the first bit of each cluster is 1 if
+  // there is any significant bit in that cluster
+  big_int x_significant_clusters = x_remain | x_clusters_first_bits;
 
-  int right_cluster_idx = sqrtw_first_bit(x_clusters);
+  // THen we have to sketch x_significant_clusters
+  // We are using m_i = element_size - (sqrt_element_size - 1) - i *
+  // sqrt_element_size + i. Note that, since b_i = sqrt_element_size - 1 + i *
+  // sqrt_element_size, we have that m_i + b_i = element_size+1, so if we shift
+  // x * perfect_sketch_m to the right by element_size bits, we already have the
+  // sketch. We only have to extract the last sqrt_element_size bits.
+  x_significant_clusters =
+      ((x_significant_clusters * perfect_sketch_m) >> element_size) &
+      (~shift_neg_0[sqrt_element_size]);
 
-  big_int right_cluster = (x >> (right_cluster_idx * sqrt_element_size)) &
-                          (~shift_neg_0[sqrt_element_size]);
+  // to find theindex of the most significant cluster, i.e., the first cluster
+  // with significant bits, we only have to find the most_significant_bit of
+  // x_significant_clusters. Since we only have sqrt_element_size bits, we can
+  // use the function cluster_most_significant_bit to do it
+  int most_significant_cluster_idx =
+      cluster_most_significant_bit(x_significant_clusters);
 
-  int ans =
-      right_cluster_idx * sqrt_element_size + sqrtw_first_bit(right_cluster);
+  // Then we will extract only the bits of the most significant cluster and
+  // shift the number to the right until it becomes the first cluster
+  big_int most_significant_cluster =
+      (x >> (most_significant_cluster_idx * sqrt_element_size)) &
+      (~shift_neg_0[sqrt_element_size]);
 
+  // Now we only have to find the most significant bit of that cluster, which,
+  // again, can be done using cluster_most_significant_bit. Since we know the
+  // original index of the cluster, it is easy to know the original index of its
+  // most significant bit and keep it in ans
+  int ans = most_significant_cluster_idx * sqrt_element_size +
+            cluster_most_significant_bit(most_significant_cluster);
+
+  // if answer is negative, then there is no most significant bit, i.e., the
+  // number is zero. Set ans to -1
   if (ans < 0) {
     ans = -1;
   }
 
+  // return ans
   return ans;
 }
 
 // find the longest common prefix between two big_ints in O(1) in word RAM model
 const int environment::fast_first_diff(big_int const &x,
                                        big_int const &y) const {
+  // the first different bit between two integers x and y is the most
+  // significant bit in x XOR y
   return fast_most_significant_bit(x ^ y);
 }
 
@@ -185,7 +249,7 @@ void fusiontree::find_important_bits() {
   for (int i = 0; i < my_env->word_size; i++) {
     // foir each bit position i in the word size given
     // if bit in position i is an important bit
-    if ((mask_important_bits & my_env->shift_1[i]) != 0) {
+    if ((mask_important_bits & my_env->shift_1[i]) != big_int(0)) {
       // add such position to array important_bits
       important_bits[important_bits_count] = i;
       // and update the value of important_bits_count
@@ -206,7 +270,7 @@ void fusiontree::find_m() {
   // anymore because it would cause a collision between the position of two
   // distinct important bits after the multiplication by m to find the sketch of
   // a number
-  big_int tag;
+  big_int tag = 0;
 
   // for every important bit b_i we will find an integer m_i such that b_i+m_i
   // is distinct for all i, modulo capacity^3. If each m_i represents one set
@@ -217,7 +281,7 @@ void fusiontree::find_m() {
     for (int j = 0; j < important_bits_count_to_3; j++) {
       // we will search for the next position m_i available in m
       // such that b_i+m_i is unique
-      if ((tag & my_env->shift_1[j]) == 0) {
+      if ((tag & my_env->shift_1[j]) == big_int(0)) {
         // if a position is not tagged, then it means there is no other pair
         // b_j, m_j such that b_j+m_j=b_i+m_i thus this position can be m_i
         m_indices[i] = j;
@@ -373,7 +437,7 @@ const int fusiontree::find_sketch_predecessor(const big_int &x) const {
 
   // the position of sketch(x) can be calculated using the number of sketches in
   // the fusion tree and the number of sketches greater than sketh(x)
-  int answer = size() - diff.to_int() - 1;
+  int answer = size() - (int)diff - 1;
 
   // check if the corner case in which the sketch is already in the fusion tree
   if (answer + 1 < size() and
@@ -450,11 +514,11 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   // elements order, it is the element with the righmost sketch in that subtree.
   // If p is the path to the lca, we just need to find the sketch predecessor of
   // e = p0111...11
-  if ((x & my_env->shift_1[lca]) != 0) {
+  if ((x & my_env->shift_1[lca]) != big_int(0)) {
     // first, add p0 to e, extracting the bits in p from x and adding 0
     e = x & my_env->shift_neg_1[lca];
     // than add a bunch of 1s
-    e = e | (my_env->shift_1[lca] - 1);
+    e = e | (my_env->shift_1[lca] - big_int(1));
     // the answer will be the sketch predecessor of e
     answer = find_sketch_predecessor(e);
   }

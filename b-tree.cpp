@@ -100,9 +100,9 @@ const big_int b_node::get_predecessor(const big_int &x) const {
     }
   } else {
     big_int pred_child = children[pred_index + 1]->get_predecessor(x);
-    if (pred_child == -1 && pred_index == -1) {
+    if ((int)pred_child == -1 && pred_index == -1) {
       return -1;
-    } else if (pred_child == -1) {
+    } else if ((int)pred_child == -1) {
       return key_tree->pos(pred_index);
     } else {
       return pred_child;

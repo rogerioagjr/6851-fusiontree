@@ -12,6 +12,8 @@ using namespace std;
 
 int big_int::word_size() const { return WSIZE; }
 
+big_int::operator int() const { return int(bs.to_ulong()); }
+
 big_int::big_int(int x) { bs = x; }
 
 big_int::big_int(const bitset<WSIZE> &b) { bs = b; }
@@ -23,7 +25,7 @@ int big_int::to_int() const {
 
 big_int big_int::operator~() const { return big_int(~bs); }
 
-big_int big_int::operator-() const { return ((~(*this)) + 1); }
+big_int big_int::operator-() const { return ((~(*this)) + big_int(1)); }
 
 bool big_int::operator<(const big_int x) const {
   return bs.to_string() < x.bs.to_string();

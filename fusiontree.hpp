@@ -26,13 +26,16 @@ class environment {
 
   // bitmasks precalculated to avoid use of <<
   big_int *shift_1, *shift_neg_1, *shift_neg_0;
-  big_int F, M, SK, K_POT, SK_F, SK_MULT;
+  // integers used by fast_most_significant_bit
+  big_int clusters_first_bits, perfect_sketch_m;
+  // integers used by sqrt_first_bit
+  big_int repeat_int, powers_of_two, interposed_bits;
 
   environment(int word_size_ = 4000, int element_size_ = 3136, int k_ = 5);
   ~environment();
 
   // first step of fast_most_significant_bit
-  const int sqrtw_first_bit(big_int x) const;
+  const int cluster_most_significant_bit(big_int x) const;
 
   // find the most significant bit of a big_int in O(1) in word RAM model
   const int fast_most_significant_bit(big_int const &x) const;

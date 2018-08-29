@@ -21,6 +21,7 @@ class big_int {
   std::bitset<WSIZE> bs;
 
  public:
+  operator int() const;
   int word_size() const;
 
   big_int(int x = 0);
