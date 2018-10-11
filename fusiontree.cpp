@@ -205,6 +205,7 @@ const int environment::fast_first_diff(big_int const &x,
 }
 
 // add numbers from a vector to array elements
+
 void fusiontree::add_in_array(vector<big_int> &elements_) {
   // sets variable sz, which keeps the size of the fusion tree
   sz = elements_.size();
@@ -219,12 +220,14 @@ void fusiontree::add_in_array(vector<big_int> &elements_) {
 }
 
 // finds the important bits of a set of integers
+
 void fusiontree::find_important_bits() {
   // if the fusion tree has a single element, there are no important bits
   if (size() == 1) return;
 
-  // find the first bit that differentiates each element from any other element
-  // of the fusion tree
+  // insert the elements one by one and, for each of them, find the first
+  // bit that differentiates that element from any other element already
+  // inserted in the fusion tree
   for (int i = 1; i < size(); i++) {
     // for each element i, find where it first differentiates from the first
     // element
@@ -261,6 +264,7 @@ void fusiontree::find_important_bits() {
 
 // finds an integer m, used to find the sketch of a numeber, and sketch_mask,
 // used to extract the important bits from it
+
 void fusiontree::find_m() {
   // precalculates the third power of the number of important bits
   int important_bits_count_to_3 =
@@ -343,6 +347,7 @@ void fusiontree::find_m() {
 
 // sets the variable data that will keep the sketched numbers, as well as the
 // bit masks which are necessary for the parallel comparison
+
 void fusiontree::set_parallel_comparison() {
   // precalculates important_bits_count^4
   int important_bits_count_to_4 = important_bits_count * important_bits_count *
@@ -380,7 +385,7 @@ void fusiontree::set_parallel_comparison() {
   }
 
   // set extract_interposed_bits_sum, which is a bitmask for the first
-  // important_bits_count^4 bits of a number. After multiplying extracting the
+  // important_bits_count^4 bits of a number. After multiplying, extracting the
   // interposed bits, multiplying again by repeat_int, and shifting the number
   // enough to the right, all interposed bits add up here
   for (int i = 0; i < important_bits_count_to_4; i++) {
@@ -391,6 +396,7 @@ void fusiontree::set_parallel_comparison() {
 }
 
 // returns the approximate sketch, in the fusion tree, of a given number
+
 const big_int fusiontree::approximate_sketch(const big_int &x) const {
   // extract the important bits of the number, multiply them by m and shift to
   // the right b_i+m_i positions so that the last significant bit go to position
@@ -403,6 +409,7 @@ const big_int fusiontree::approximate_sketch(const big_int &x) const {
 
 // returns an integer with capacity repetitions of the sketch of x, separated by
 // one zero between any consecutive repetitions
+
 const big_int fusiontree::multiple_sketches(const big_int &x) const {
   // calculate the approximate sketch of x and multiply by the variable
   // repeat_int
@@ -413,6 +420,7 @@ const big_int fusiontree::multiple_sketches(const big_int &x) const {
 
 // returns the index of the biggest y in the tree such that
 // sketch(y)<=sketch(x), using parallel comparison
+
 const int fusiontree::find_sketch_predecessor(const big_int &x) const {
   // precalculate the value of important_bits_count^4
   int important_bits_count_to_4 = important_bits_count * important_bits_count *
@@ -450,13 +458,16 @@ const int fusiontree::find_sketch_predecessor(const big_int &x) const {
 }
 
 // returns the number of integers stored
+
 const int fusiontree::size() const { return sz; }
 
 // returns the number in a given position in the tree
+
 const big_int fusiontree::pos(int i) const { return elements[i]; }
 
 // returns the index of the biggest k in the tree succh that k<=x
 // or -1 if there is no such k
+
 const int fusiontree::find_predecessor(const big_int &x) const {
   // first, find the position of sketch(x) among the sketches of the elements in
   // the fusion tree keep the element right before and right after sketch(x)
@@ -510,7 +521,7 @@ const int fusiontree::find_predecessor(const big_int &x) const {
   big_int e;
 
   // if the bit that first differentiates x is 1, then x lies in the right
-  // subtree of the lca therefore, this subtree is empty and the predecessor of
+  // subtree of the lca, therefore, this subtree is empty and the predecessor of
   // x is the greatest number in the left subtree. Since the sketches keep the
   // elements order, it is the element with the righmost sketch in that subtree.
   // If p is the path to the lca, we just need to find the sketch predecessor of
@@ -551,6 +562,7 @@ const int fusiontree::find_predecessor(const big_int &x) const {
 // fusiontree constructor
 // v_ is a vector with the integers to be stored
 // my_env is the environment with the specifications of the fusion tree
+
 fusiontree::fusiontree(vector<big_int> &elements_, environment *my_env_) {
   // set the values of the class variables
   // see class fusiontree in the header file for comments on each variable
@@ -587,6 +599,7 @@ fusiontree::fusiontree(vector<big_int> &elements_, environment *my_env_) {
 
 // fusiontree destructor
 // It just needs to free the dynamically allocated arrays in the class
+
 fusiontree::~fusiontree() {
   // use delete [] to free an array
   delete[] elements;

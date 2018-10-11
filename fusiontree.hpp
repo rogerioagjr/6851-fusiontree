@@ -15,7 +15,6 @@
 #include "big_int.hpp"
 
 using namespace std;
-
 class environment {
  public:
   int word_size;     // Size of the type being used as big int, in bits
@@ -37,7 +36,7 @@ class environment {
                             // interposed among the repetitions of a
                             // number
 
-  environment(int word_size_ = 4000, int element_size_ = 3136, int k_ = 5);
+  environment(int word_size_ = 4000, int element_size_ = 3136, int capacity_ = 5);
   ~environment();
 
   // first step of fast_most_significant_bit
@@ -53,7 +52,7 @@ class environment {
 
 class fusiontree {
  private:
-  environment *my_env;  // objecrt with the specifications of the fusion tree
+  environment *my_env;  // object with the specifications of the fusion tree
 
   big_int data;  // sketched integers
 
